@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>私人木纹导航 - 终极版</title>
+    <title>我的书斋导航</title>
     <link rel="stylesheet" href="style.css">
     <script src="https://cdn.jsdelivr.net/npm/sortablejs@1.15.0/Sortable.min.js"></script>
 </head>
@@ -14,10 +14,12 @@
         <header class="glass-header">
             <h1 class="logo">我的书斋</h1>
             <div id="nav-controls">
-                <button id="login-btn" class="round-btn" onclick="showModal('login-modal')">管理登录</button>
+                <button id="login-btn" class="round-btn" onclick="openLogin()">管理登录</button>
+                
                 <div id="admin-actions" style="display:none;">
                     <button onclick="showSettingsHub()" class="round-btn settings-main-btn">⚙️ 深度设置</button>
                     <button onclick="saveAll()" class="round-btn save-btn">☁️ 云端同步</button>
+                    <button onclick="logout()" class="round-btn" style="background:rgba(0,0,0,0.5)">退出</button>
                 </div>
             </div>
         </header>
@@ -30,7 +32,7 @@
     <div id="login-modal" class="modal">
         <div class="modal-content glass-card">
             <h2>管理员验证</h2>
-            <input type="password" id="pass-input" placeholder="输入您的暗号">
+            <input type="password" id="pass-input" placeholder="请输入密码">
             <div class="modal-btns">
                 <button class="action-btn" onclick="login()">开启管理</button>
                 <button class="action-btn cancel" onclick="hideModal('login-modal')">取消</button>
@@ -49,12 +51,12 @@
             </div>
             
             <div class="wallpaper-config">
-                <h3>壁纸实验室</h3>
+                <h3>壁纸设置</h3>
                 <div class="input-row">
-                    <input type="text" id="wp-input" placeholder="输入壁纸 URL">
+                    <input type="text" id="wp-input" placeholder="输入壁纸图片 URL">
                     <button onclick="applyWallpaper()">确定</button>
                 </div>
-                <button class="random-wp-btn" onclick="randomWallpaper()">✨ 试试必应随机美图</button>
+                <button class="random-wp-btn" onclick="randomWallpaper()">✨ 切换随机美图</button>
             </div>
             <button class="close-hub" onclick="hideModal('settings-hub')">退出菜单</button>
         </div>
