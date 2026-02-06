@@ -1,15 +1,14 @@
-// ====== 请务必修改这里 ======
+// ====== 配置区 ======
 const CONFIG = {
     API_URL: 'https://mynavdata.summerqwer999.workers.dev/api/config', 
     ADMIN_PASS: '226688'
 };
-// ==========================
+// ===================
 
 let links = [];
 let wallpaper = '';
 let isLogged = false;
 
-// 1. 初始化
 window.onload = async function() {
     try {
         const res = await fetch(CONFIG.API_URL);
@@ -24,15 +23,17 @@ window.onload = async function() {
     }
 };
 
-// 2. 渲染核心
+// 1. 核心渲染 (含双重保险图标逻辑)
 window.render = function() {
+    const bgLayer = document.getElementById('bg-layer');
     const bgUrl = wallpaper || 'https://images.unsplash.com/photo-1541123356219-284ebe98ae3b?q=80&w=1920';
-    document.getElementById('bg-layer').style.backgroundImage = `url(${bgUrl})`;
+    bgLayer.style.backgroundImage = `url(${bgUrl})`;
     
     const grid = document.getElementById('link-grid');
     grid.innerHTML = '';
     
     const categories = [...new Set(links.map(item => item.category || '默认'))];
+    
     categories.forEach(cat => {
         const section = document.createElement('div');
         section.className = 'category-group';
@@ -42,15 +43,42 @@ window.render = function() {
         links.filter(l => (l.category||'默认') === cat).forEach(item => {
             const card = document.createElement('div');
             card.className = 'glass-card card';
-            let host = 'default';
-            try { host = new URL(item.url).hostname; } catch(e){}
             
+            let domain = '';
+            try { domain = new URL(item.url).hostname; } catch(e) { domain = 'example.com'; }
+            
+            // 图标源 A: Google (首选)
+            const googleIcon = `https://www.google.com/s2/favicons?domain=${domain}&sz=64`;
+            // 图标源 B: iowen (国内加速备选)
+            const iowenIcon = `https://api.iowen.cn/favicon/${domain}.png`;
+
+            // 创建图片并设置双重逻辑
+            const imgId = `img-${Math.random().toString(36).substr(2, 9)}`;
             card.innerHTML = `
                 <a href="${item.url}" target="_blank">
-                    <img src="https://api.faviconkit.com/${host}/64" onerror="this.src='https://api.faviconkit.com/default/64'">
+                    <img id="${imgId}" src="${googleIcon}" loading="lazy" alt="icon">
                     <div>${item.title}</div>
                 </a>`;
             
+            // 逻辑控制：1. 报错即换 2. 10秒不出来也换
+            const targetImg = card.querySelector(`#${imgId}`);
+            let hasSwitched = false;
+
+            const switchToIowen = () => {
+                if (!hasSwitched) {
+                    hasSwitched = true;
+                    targetImg.src = iowenIcon;
+                }
+            };
+
+            targetImg.onerror = switchToIowen; // 报错立刻换
+            
+            setTimeout(() => {
+                if (!targetImg.complete || targetImg.naturalWidth === 0) {
+                    switchToIowen(); // 10秒还没加载完或宽度为0(被墙)
+                }
+            }, 10000);
+
             card.onclick = (e) => {
                 if(document.body.classList.contains('edit-mode')) {
                     e.preventDefault();
@@ -70,147 +98,119 @@ window.render = function() {
     });
 };
 
-// 3. 必应壁纸逻辑
-window.randomWallpaper = function() {
-    // 使用随机数防止浏览器缓存同一张图
-    const randId = Math.floor(Math.random() * 1000);
-    const newWp = `https://bing.img.run/rand_uhd.php?rand=${randId}`;
-    
-    // 仅预览，不存入变量。用户满意后点“永久固定”才正式赋值。
-    document.getElementById('bg-layer').style.backgroundImage = `url(${newWp})`;
-    // 临时存储这个URL，以便点击固定时获取
-    window.tempWp = newWp;
-};
-
-window.fixCurrentWallpaper = function() {
-    if(!window.tempWp) {
-        alert("请先点击'随机必应美图'，看到喜欢的再固定。");
-        return;
+// 2. 清空全部功能
+window.clearAllData = function() {
+    if (!checkAuth()) return alert("登录过期");
+    if (confirm("⚠️ 警告：这将删除所有分类和链接！确定要格式化书斋吗？")) {
+        if (confirm("请再次确认，此操作不可撤销！")) {
+            links = [];
+            render();
+            alert("已清空，请记得点击'云端保存'同步到服务器。");
+        }
     }
-    wallpaper = window.tempWp;
-    alert("📌 已选定这张美图为永久背景！请记得点击下方的'云端保存'。");
 };
 
-// 4. 谷歌书签导入逻辑
+// 3. 导入书签
 window.importBookmarks = function(event) {
     const file = event.target.files[0];
     if (!file) return;
-
     const reader = new FileReader();
     reader.onload = function(e) {
         const content = e.target.result;
         const parser = new DOMParser();
         const doc = parser.parseFromString(content, "text/html");
-        const dl = doc.querySelector("dl"); // 谷歌书签的核心包裹层
-
-        if (!dl) {
-            alert("书签格式不正确，请确保是谷歌浏览器导出的 .html 文件");
-            return;
-        }
-
-        const importedLinks = [];
-        
-        // 解析函数：处理嵌套文件夹
-        function parseFolder(container, currentCategory) {
+        const dl = doc.querySelector("dl");
+        if (!dl) return alert("文件格式错误");
+        const imported = [];
+        function parseFolder(container, cat) {
             const items = container.querySelectorAll(":scope > dt");
             items.forEach(dt => {
                 const h3 = dt.querySelector(":scope > h3");
                 const a = dt.querySelector(":scope > a");
                 const subDl = dt.querySelector(":scope > dl");
-
-                if (h3 && subDl) {
-                    // 这是一个文件夹
-                    parseFolder(subDl, h3.innerText);
-                } else if (a) {
-                    // 这是一个链接
-                    importedLinks.push({
-                        title: a.innerText,
-                        url: a.href,
-                        category: currentCategory || "书签导入"
-                    });
-                }
+                if (h3 && subDl) parseFolder(subDl, h3.innerText);
+                else if (a) imported.push({ title: a.innerText, url: a.href, category: cat || "书签导入" });
             });
         }
-
         parseFolder(dl, "书签导入");
-
-        if (importedLinks.length > 0) {
-            if (confirm(`成功解析出 ${importedLinks.length} 个书签，是否合并到当前导航站？`)) {
-                links = [...links, ...importedLinks];
-                render();
-                alert("导入成功！已按文件夹分类展示。");
-            }
-        } else {
-            alert("未在文件中找到有效的链接。");
+        if (imported.length > 0) {
+            links = [...links, ...imported];
+            render();
+            alert(`成功导入 ${imported.length} 条链接！`);
         }
     };
     reader.readAsText(file);
 };
 
-// 5. 权限与认证
+// 4. 壁纸逻辑
+window.randomWallpaper = () => {
+    const newWp = `https://bing.img.run/rand_uhd.php?rand=${Math.random()}`;
+    document.getElementById('bg-layer').style.backgroundImage = `url(${newWp})`;
+    window.tempWp = newWp;
+};
+window.fixCurrentWallpaper = () => {
+    if(!window.tempWp) return alert("请先随机切换壁纸");
+    wallpaper = window.tempWp;
+    alert("📌 壁纸已锁定！记得保存。");
+};
+window.applyWallpaper = () => {
+    wallpaper = document.getElementById('wp-input').value;
+    render();
+};
+
+// 5. 权限与同步
 function checkAuth() {
     const t = localStorage.getItem('loginTime');
     return t && (Date.now() - t < 10 * 60 * 1000);
 }
-
-window.login = function() {
-    const pass = document.getElementById('pass-input').value;
-    if(pass === CONFIG.ADMIN_PASS) {
+window.login = () => {
+    const p = document.getElementById('pass-input').value;
+    if(p === CONFIG.ADMIN_PASS) {
         localStorage.setItem('loginTime', Date.now());
         enableAdminMode();
         hideModal('login-modal');
-    } else alert("暗号不对哦！");
+    } else alert("暗号错误");
 };
-
 function enableAdminMode() {
     isLogged = true;
     document.getElementById('login-btn').style.display = 'none';
     document.getElementById('admin-actions').style.display = 'flex';
 }
-
-// 6. 云端同步 (核心网络请求修复)
 window.saveAll = async function() {
-    if(!checkAuth()) return alert("登录已过期，请重新登录");
-    const saveBtn = document.getElementById('save-btn');
-    saveBtn.innerText = "正在同步...";
-    
+    if(!checkAuth()) return alert("登录已过期");
+    const btn = document.getElementById('save-btn');
+    btn.innerText = "同步中...";
     try {
         const res = await fetch(CONFIG.API_URL, {
             method: 'POST',
             mode: 'cors',
-            headers: { 
-                'Content-Type': 'application/json',
-                'Authorization': `Bearer ${CONFIG.ADMIN_PASS}` 
-            },
+            headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${CONFIG.ADMIN_PASS}` },
             body: JSON.stringify({ links, wallpaper })
         });
-        if(res.ok) alert("✅ 云端同步成功！背景和书签已永久保存。");
+        if(res.ok) alert("✅ 云端同步成功！");
         else alert("❌ 同步失败");
-    } catch (e) {
-        alert("❌ 网络错误：请检查 Worker 的跨域设置(CORS)");
-    } finally {
-        saveBtn.innerText = "☁️ 云端保存";
-    }
+    } catch (e) { alert("❌ 网络错误"); }
+    finally { btn.innerText = "☁️ 云端保存"; }
 };
 
-// 7. 弹窗控制
+// 6. UI 与 弹窗
 window.openLogin = () => document.getElementById('login-modal').style.display='flex';
 window.hideModal = (id) => document.getElementById(id).style.display='none';
-window.showSettingsHub = () => document.getElementById('settings-hub').style.display='flex';
+window.showSettingsHub = () => {
+    if(!checkAuth()) { alert("登录超时"); location.reload(); return; }
+    document.getElementById('settings-hub').style.display='flex';
+};
 window.showUniversalModal = (h) => { 
     document.getElementById('universal-content').innerHTML = h; 
     document.getElementById('universal-modal').style.display='flex'; 
 };
-
-// 8. 分类与链接管理
 window.openAddCategoryUI = () => {
     window.showUniversalModal(`<h3>新建分类</h3><input id="new-cat" placeholder="分类名"><button class="action-btn" onclick="window.confirmAddCat()">确定</button>`);
 };
 window.confirmAddCat = () => {
     const c = document.getElementById('new-cat').value;
-    if(c) { links.push({title:'示例', url:'https://google.com', category:c}); render(); hideModal('universal-modal'); }
+    if(c) { links.push({title:'新书架', url:'https://www.google.com', category:c}); render(); hideModal('universal-modal'); }
 };
-
 window.openAddLinkUI = () => {
     const cats = [...new Set(links.map(item => item.category || '默认'))];
     let opts = cats.map(c => `<option value="${c}">${c}</option>`).join('');
@@ -221,10 +221,8 @@ window.confirmAddLink = () => {
     if(t&&u) { links.push({title:t,url:u,category:c}); render(); hideModal('universal-modal'); }
 };
 
-// 9. 编辑模式与背景
 window.enterEditMode = () => { document.body.classList.add('edit-mode'); document.getElementById('exit-edit-btn').style.display='block'; hideModal('settings-hub'); render(); };
 window.exitEditMode = () => { document.body.classList.remove('edit-mode'); document.getElementById('exit-edit-btn').style.display='none'; render(); };
-window.applyWallpaper = () => { wallpaper = document.getElementById('wp-input').value; render(); };
 
 function reorderLinksFromDOM() {
     const nl = [];
