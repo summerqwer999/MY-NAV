@@ -1,7 +1,7 @@
 // ====== 配置区 ======
 const CONFIG = {
-    API_URL: 'https://你的Worker地址.workers.dev/api/config', 
-    ADMIN_PASS: '你的管理密码'
+    API_URL: 'https://mynavdata.summerqwer999.workers.dev/api/config', 
+    ADMIN_PASS: '226688'
 };
 // ===================
 
@@ -22,8 +22,9 @@ window.onload = async function() {
 
 // 1. 渲染引擎
 window.render = function() {
+    const bgLayer = document.getElementById('bg-layer');
     const bgUrl = wallpaper || 'https://images.unsplash.com/photo-1541123356219-284ebe98ae3b?q=80&w=1920';
-    document.getElementById('bg-layer').style.backgroundImage = `url(${bgUrl})`;
+    bgLayer.style.backgroundImage = `url(${bgUrl})`;
     
     const grid = document.getElementById('link-grid');
     grid.innerHTML = '';
@@ -69,28 +70,27 @@ window.render = function() {
     });
 };
 
-// 2. 极速批量删除
+// 2. 批量模式下的直接删除
 window.directDelete = (url, title) => {
     links = links.filter(l => !(l.url === url && l.title === title));
     render();
 };
 
-// 3. 分类管理弹窗逻辑
+// 3. 分类管理功能
 window.openCategoryManager = () => {
     const cats = [...new Set(links.map(item => item.category || '默认'))];
     let listHtml = cats.map(cat => `
         <div class="cat-manage-item">
             <input type="text" value="${cat}" id="input-${cat}">
-            <button class="action-btn danger" onclick="window.confirmDelCat('${cat}')">删除</button>
-            <button class="action-btn" style="width:auto; padding:8px 15px; margin-left:5px;" onclick="window.confirmRenameCat('${cat}')">保存</button>
+            <button class="action-btn" style="width:auto; margin:0; padding:8px 15px; font-size:12px;" onclick="window.confirmRenameCat('${cat}')">改名</button>
+            <button class="action-btn danger" style="width:auto; margin:0; padding:8px 15px; font-size:12px;" onclick="window.confirmDelCat('${cat}')">删除</button>
         </div>
     `).join('');
 
     window.showUniversalModal(`
-        <h2>分类管理</h2>
-        <p style="font-size:12px; color:#aaa;">修改名称后点保存，删除分类将清空其下所有链接</p>
-        <div class="cat-manage-list">${listHtml}</div>
-        <button class="action-btn cancel" onclick="window.hideModal('universal-modal')">关闭返回</button>
+        <h3>分类管理</h3>
+        <div style="max-height:300px; overflow-y:auto; margin-bottom:20px;">${listHtml || '无分类'}</div>
+        <button class="action-btn cancel" onclick="window.hideModal('universal-modal')">返回</button>
     `);
 };
 
@@ -99,18 +99,18 @@ window.confirmRenameCat = (oldName) => {
     if(!newName || newName === oldName) return;
     links.forEach(l => { if(l.category === oldName) l.category = newName; });
     render();
-    window.openCategoryManager(); // 刷新列表
+    window.openCategoryManager();
 };
 
 window.confirmDelCat = (cat) => {
-    if(confirm(`确定删除分类 "${cat}" 及其下所有链接吗？`)) {
+    if(confirm(`删除分类 "${cat}" 及其下所有链接？`)) {
         links = links.filter(l => l.category !== cat);
         render();
         window.openCategoryManager();
     }
 };
 
-// 4. 带取消按钮的通用弹窗
+// 4. 新增与 UI
 window.openAddCategoryUI = () => {
     window.showUniversalModal(`
         <h3>新建分类</h3>
@@ -125,15 +125,12 @@ window.openAddLinkUI = () => {
     let opts = cats.map(c => `<option value="${c}">${c}</option>`).join('');
     window.showUniversalModal(`
         <h3>新增链接</h3>
-        <input id="at" placeholder="网站名称">
-        <input id="au" placeholder="网址 (http://...)">
-        <select id="ac">${opts}</select>
+        <input id="at" placeholder="名称"><input id="au" placeholder="网址"><select id="ac">${opts}</select>
         <button class="action-btn" onclick="window.confirmAddLink()">确定添加</button>
         <button class="action-btn cancel" onclick="window.hideModal('universal-modal')">取消</button>
     `);
 };
 
-// 5. 其它功能函数
 window.confirmAddCat = () => {
     const c = document.getElementById('new-cat').value;
     if(c) { links.push({title:'新书架', url:'https://www.google.com', category:c}); render(); hideModal('universal-modal'); }
@@ -142,12 +139,17 @@ window.confirmAddLink = () => {
     const t=document.getElementById('at').value, u=document.getElementById('au').value, c=document.getElementById('ac').value;
     if(t&&u) { links.push({title:t,url:u,category:c}); render(); hideModal('universal-modal'); }
 };
-window.importBookmarks = function(event) {
+
+window.clearAllData = () => {
+    if(confirm("🧨 确定清空所有数据吗？不可撤销！")) { links = []; render(); }
+};
+
+window.importBookmarks = (event) => {
     const file = event.target.files[0]; if (!file) return;
     const reader = new FileReader();
     reader.onload = (e) => {
         const doc = new DOMParser().parseFromString(e.target.result, "text/html");
-        const dl = doc.querySelector("dl"); if (!dl) return alert("解析失败");
+        const dl = doc.querySelector("dl");
         const imported = [];
         function parse(container, cat) {
             container.querySelectorAll(":scope > dt").forEach(dt => {
@@ -156,31 +158,29 @@ window.importBookmarks = function(event) {
                 else if (a) imported.push({ title: a.innerText, url: a.href, category: cat || "书签导入" });
             });
         }
-        parse(dl, "书签导入");
-        links = [...links, ...imported]; render(); alert(`导入成功 ${imported.length} 条`);
+        if(dl) parse(dl, "书签导入");
+        links = [...links, ...imported]; render();
     };
     reader.readAsText(file);
 };
 
-window.clearAllData = () => {
-    if(confirm("确定清空全站所有分类和链接吗？")) { links = []; render(); alert("已清空，请保存。"); }
-};
+// 5. 壁纸与权限
 window.randomWallpaper = () => {
     const url = `https://bing.img.run/rand_uhd.php?r=${Math.random()}`;
     document.getElementById('bg-layer').style.backgroundImage = `url(${url})`;
     window.tempWp = url;
 };
-window.fixCurrentWallpaper = () => { if(window.tempWp){ wallpaper = window.tempWp; alert("壁纸已锁定"); } };
+window.fixCurrentWallpaper = () => { if(window.tempWp) wallpaper = window.tempWp; };
 window.applyWallpaper = () => { wallpaper = document.getElementById('wp-input').value; render(); };
 
-// 权限与保存
 function checkAuth() { const t = localStorage.getItem('loginTime'); return t && (Date.now() - t < 10*60*1000); }
 window.login = () => {
     if(document.getElementById('pass-input').value === CONFIG.ADMIN_PASS) {
         localStorage.setItem('loginTime', Date.now()); enableAdminMode(); hideModal('login-modal');
-    } else alert("暗号不对");
+    } else alert("暗号错误");
 };
 function enableAdminMode() { isLogged = true; document.getElementById('login-btn').style.display='none'; document.getElementById('admin-actions').style.display='flex'; }
+
 window.saveAll = async () => {
     const btn = document.getElementById('save-btn'); btn.innerText = "同步中...";
     try {
@@ -194,7 +194,7 @@ window.saveAll = async () => {
     btn.innerText = "☁️ 云端保存";
 };
 
-// UI辅助
+// UI 辅助
 window.openLogin = () => document.getElementById('login-modal').style.display='flex';
 window.hideModal = (id) => document.getElementById(id).style.display='none';
 window.showSettingsHub = () => document.getElementById('settings-hub').style.display='flex';
