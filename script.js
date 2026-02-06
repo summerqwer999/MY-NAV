@@ -20,10 +20,20 @@ window.onload = async function() {
     } catch (e) { render(); }
 };
 
+// 自定义轻提示
+window.toast = (msg) => {
+    const container = document.getElementById('toast-container');
+    const el = document.createElement('div');
+    el.className = 'toast';
+    el.innerText = msg;
+    container.appendChild(el);
+    setTimeout(() => { el.style.opacity = '0'; setTimeout(() => el.remove(), 300); }, 2500);
+};
+
 // 1. 渲染引擎
 window.render = function() {
-    const bgUrl = wallpaper || 'https://images.unsplash.com/photo-1541123356219-284ebe98ae3b?q=80&w=1920';
-    document.getElementById('bg-layer').style.backgroundImage = `url(${bgUrl})`;
+    const bgLayer = document.getElementById('bg-layer');
+    if (wallpaper) bgLayer.style.backgroundImage = `url(${wallpaper})`;
     
     const grid = document.getElementById('link-grid');
     grid.innerHTML = '';
@@ -52,7 +62,6 @@ window.render = function() {
                     <div>${item.title}</div>
                 </a>`;
             
-            // 双保险图标逻辑
             const tImg = card.querySelector(`#${imgId}`);
             let switched = false;
             const toI = () => { if(!switched){ switched=true; tImg.src=iIcon; } };
@@ -69,28 +78,27 @@ window.render = function() {
     });
 };
 
-// 2. 极速批量删除
 window.directDelete = (url, title) => {
     links = links.filter(l => !(l.url === url && l.title === title));
     render();
+    window.toast("已移除项目");
 };
 
-// 3. 分类管理弹窗逻辑
+// 2. 分类管理
 window.openCategoryManager = () => {
     const cats = [...new Set(links.map(item => item.category || '默认'))];
     let listHtml = cats.map(cat => `
         <div class="cat-manage-item">
             <input type="text" value="${cat}" id="input-${cat}">
-            <button class="action-btn danger" onclick="window.confirmDelCat('${cat}')">删除</button>
-            <button class="action-btn" style="width:auto; padding:8px 15px; margin-left:5px;" onclick="window.confirmRenameCat('${cat}')">保存</button>
+            <button class="pill-btn btn-danger" style="padding:5px 12px; font-size:12px;" onclick="window.confirmDelCat('${cat}')">删除</button>
+            <button class="pill-btn btn-accent" style="padding:5px 12px; font-size:12px; margin-left:5px;" onclick="window.confirmRenameCat('${cat}')">改名</button>
         </div>
     `).join('');
 
     window.showUniversalModal(`
-        <h2>分类管理</h2>
-        <p style="font-size:12px; color:#aaa;">修改名称后点保存，删除分类将清空其下所有链接</p>
-        <div class="cat-manage-list">${listHtml}</div>
-        <button class="action-btn cancel" onclick="window.hideModal('universal-modal')">关闭返回</button>
+        <h3>分类管理</h3>
+        <div class="cat-manage-list">${listHtml || '暂无分类'}</div>
+        <button class="pill-btn btn-cancel full-w" onclick="window.hideModal('universal-modal')">返回</button>
     `);
 };
 
@@ -99,7 +107,8 @@ window.confirmRenameCat = (oldName) => {
     if(!newName || newName === oldName) return;
     links.forEach(l => { if(l.category === oldName) l.category = newName; });
     render();
-    window.openCategoryManager(); // 刷新列表
+    window.toast("分类名已更新");
+    window.openCategoryManager();
 };
 
 window.confirmDelCat = (cat) => {
@@ -110,13 +119,13 @@ window.confirmDelCat = (cat) => {
     }
 };
 
-// 4. 带取消按钮的通用弹窗
+// 3. 弹窗 UI
 window.openAddCategoryUI = () => {
     window.showUniversalModal(`
         <h3>新建分类</h3>
-        <input id="new-cat" placeholder="分类名称">
-        <button class="action-btn" onclick="window.confirmAddCat()">确定创建</button>
-        <button class="action-btn cancel" onclick="window.hideModal('universal-modal')">取消</button>
+        <input id="new-cat" placeholder="分类名称" class="full-w-input" style="width:100%; box-sizing:border-box; padding:12px; border-radius:15px; border:1px solid #444; background:rgba(0,0,0,0.3); color:#fff; margin-bottom:15px;">
+        <button class="pill-btn btn-accent full-w" onclick="window.confirmAddCat()">确定创建</button>
+        <button class="pill-btn btn-cancel full-w" onclick="window.hideModal('universal-modal')">取消</button>
     `);
 };
 
@@ -125,22 +134,22 @@ window.openAddLinkUI = () => {
     let opts = cats.map(c => `<option value="${c}">${c}</option>`).join('');
     window.showUniversalModal(`
         <h3>新增链接</h3>
-        <input id="at" placeholder="网站名称">
-        <input id="au" placeholder="网址 (http://...)">
-        <select id="ac">${opts}</select>
-        <button class="action-btn" onclick="window.confirmAddLink()">确定添加</button>
-        <button class="action-btn cancel" onclick="window.hideModal('universal-modal')">取消</button>
+        <input id="at" placeholder="网站名称" style="width:100%; box-sizing:border-box; padding:12px; border-radius:15px; border:1px solid #444; background:rgba(0,0,0,0.3); color:#fff; margin-bottom:10px;">
+        <input id="au" placeholder="网址" style="width:100%; box-sizing:border-box; padding:12px; border-radius:15px; border:1px solid #444; background:rgba(0,0,0,0.3); color:#fff; margin-bottom:10px;">
+        <select id="ac" style="width:100%; box-sizing:border-box; padding:12px; border-radius:15px; border:1px solid #444; background:rgba(0,0,0,0.3); color:#fff; margin-bottom:10px;">${opts}</select>
+        <button class="pill-btn btn-accent full-w" onclick="window.confirmAddLink()">确定添加</button>
+        <button class="pill-btn btn-cancel full-w" onclick="window.hideModal('universal-modal')">取消</button>
     `);
 };
 
-// 5. 其它功能函数
+// 4. 功能逻辑
 window.confirmAddCat = () => {
     const c = document.getElementById('new-cat').value;
-    if(c) { links.push({title:'新书架', url:'https://www.google.com', category:c}); render(); hideModal('universal-modal'); }
+    if(c) { links.push({title:'新书架', url:'https://www.google.com', category:c}); render(); hideModal('universal-modal'); window.toast("分类已创建");}
 };
 window.confirmAddLink = () => {
     const t=document.getElementById('at').value, u=document.getElementById('au').value, c=document.getElementById('ac').value;
-    if(t&&u) { links.push({title:t,url:u,category:c}); render(); hideModal('universal-modal'); }
+    if(t&&u) { links.push({title:t,url:u,category:c}); render(); hideModal('universal-modal'); window.toast("链接已添加");}
 };
 window.importBookmarks = function(event) {
     const file = event.target.files[0]; if (!file) return;
@@ -157,49 +166,51 @@ window.importBookmarks = function(event) {
             });
         }
         parse(dl, "书签导入");
-        links = [...links, ...imported]; render(); alert(`导入成功 ${imported.length} 条`);
+        links = [...links, ...imported]; render(); window.toast(`成功导入 ${imported.length} 条数据`);
     };
     reader.readAsText(file);
 };
 
 window.clearAllData = () => {
-    if(confirm("确定清空全站所有分类和链接吗？")) { links = []; render(); alert("已清空，请保存。"); }
+    if(confirm("确定清空全站吗？")) { links = []; render(); window.toast("已格式化"); }
 };
 window.randomWallpaper = () => {
     const url = `https://bing.img.run/rand_uhd.php?r=${Math.random()}`;
     document.getElementById('bg-layer').style.backgroundImage = `url(${url})`;
     window.tempWp = url;
+    window.toast("预览新背景中...");
 };
-window.fixCurrentWallpaper = () => { if(window.tempWp){ wallpaper = window.tempWp; alert("壁纸已锁定"); } };
-window.applyWallpaper = () => { wallpaper = document.getElementById('wp-input').value; render(); };
+window.fixCurrentWallpaper = () => { if(window.tempWp){ wallpaper = window.tempWp; window.toast("背景已锁定，记得点击保存"); } };
+window.applyWallpaper = () => { wallpaper = document.getElementById('wp-input').value; render(); window.toast("背景已应用"); };
 
-// 权限与保存
+// 权限
 function checkAuth() { const t = localStorage.getItem('loginTime'); return t && (Date.now() - t < 10*60*1000); }
 window.login = () => {
     if(document.getElementById('pass-input').value === CONFIG.ADMIN_PASS) {
-        localStorage.setItem('loginTime', Date.now()); enableAdminMode(); hideModal('login-modal');
-    } else alert("暗号不对");
+        localStorage.setItem('loginTime', Date.now()); enableAdminMode(); hideModal('login-modal'); window.toast("欢迎回来，馆长");
+    } else { window.toast("暗号错误"); }
 };
 function enableAdminMode() { isLogged = true; document.getElementById('login-btn').style.display='none'; document.getElementById('admin-actions').style.display='flex'; }
+
 window.saveAll = async () => {
-    const btn = document.getElementById('save-btn'); btn.innerText = "同步中...";
+    const btn = document.getElementById('save-btn'); btn.innerText = "正在同步...";
     try {
         await fetch(CONFIG.API_URL, {
             method: 'POST', mode: 'cors',
             headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${CONFIG.ADMIN_PASS}` },
             body: JSON.stringify({ links, wallpaper })
         });
-        alert("✅ 云端同步成功！");
-    } catch (e) { alert("❌ 保存失败"); }
-    btn.innerText = "☁️ 云端保存";
+        window.toast("✅ 云端数据已同步");
+    } catch (e) { window.toast("❌ 保存失败"); }
+    btn.innerText = "☁️ 保存";
 };
 
-// UI辅助
+// UI 辅助
 window.openLogin = () => document.getElementById('login-modal').style.display='flex';
 window.hideModal = (id) => document.getElementById(id).style.display='none';
 window.showSettingsHub = () => document.getElementById('settings-hub').style.display='flex';
 window.showUniversalModal = (h) => { document.getElementById('universal-content').innerHTML = h; document.getElementById('universal-modal').style.display='flex'; };
-window.enterEditMode = () => { document.body.classList.add('edit-mode'); document.getElementById('exit-edit-btn').style.display='block'; hideModal('settings-hub'); };
+window.enterEditMode = () => { document.body.classList.add('edit-mode'); document.getElementById('exit-edit-btn').style.display='block'; hideModal('settings-hub'); window.toast("批量模式：点击红叉直接删除"); };
 window.exitEditMode = () => { document.body.classList.remove('edit-mode'); document.getElementById('exit-edit-btn').style.display='none'; };
 
 function reorderLinksFromDOM() {
