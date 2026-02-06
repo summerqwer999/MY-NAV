@@ -3,21 +3,22 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>私人书斋·极简雅筑</title>
+    <title>私人书斋·雅筑2.0</title>
     <link rel="stylesheet" href="style.css">
     <script src="https://cdn.jsdelivr.net/npm/sortablejs@1.15.0/Sortable.min.js"></script>
 </head>
 <body>
     <div id="bg-layer"></div>
+    <div id="toast-container"></div>
     
     <div id="app">
         <header class="main-header">
-            <h1 class="logo">我的书斋</h1>
+            <h1 class="logo">书斋<span>雅筑</span></h1>
             <div class="header-right">
-                <button id="login-btn" class="btn btn-glass" onclick="window.openLogin()">管理登录</button>
+                <button id="login-btn" class="pill-btn btn-glass" onclick="window.openLogin()">管理登录</button>
                 <div id="admin-actions" style="display:none;">
-                    <button onclick="window.showSettingsHub()" class="btn btn-gold">⚙️ 深度设置</button>
-                    <button id="save-btn" onclick="window.saveAll()" class="btn btn-green">☁️ 云端保存</button>
+                    <button onclick="window.showSettingsHub()" class="pill-btn btn-accent">⚙️ 设置</button>
+                    <button id="save-btn" onclick="window.saveAll()" class="pill-btn btn-save">☁️ 保存</button>
                 </div>
             </div>
         </header>
@@ -28,18 +29,16 @@
 
     <div id="login-modal" class="modal">
         <div class="modal-content glass-card">
-            <h2>通行证验证</h2>
-            <input type="password" id="pass-input" placeholder="输入您的管理暗号">
-            <div class="modal-btns">
-                <button class="action-btn" onclick="window.login()">开启管理</button>
-                <button class="action-btn cancel" onclick="window.hideModal('login-modal')">返回</button>
-            </div>
+            <h2>通行证</h2>
+            <input type="password" id="pass-input" placeholder="输入管理暗号">
+            <button class="pill-btn btn-accent full-w" onclick="window.login()">进入书斋</button>
+            <button class="pill-btn btn-cancel full-w" onclick="window.hideModal('login-modal')">返回</button>
         </div>
     </div>
 
     <div id="settings-hub" class="modal">
         <div class="modal-content glass-card hub-content">
-            <h2>管理中心</h2>
+            <h2 class="hub-title">管理中心</h2>
             <div class="hub-grid">
                 <div class="hub-item" onclick="window.openAddCategoryUI()">📁<br>新建分类</div>
                 <div class="hub-item" onclick="window.openCategoryManager()">📝<br>分类管理</div>
@@ -47,30 +46,29 @@
                 <div class="hub-item" onclick="window.enterEditMode()">🗑️<br>批量删除</div>
             </div>
             
-            <div class="import-box">
-                <button class="btn-import" onclick="document.getElementById('bookmark-file').click()">
-                    📥 导入谷歌书签 (.html)
+            <div class="config-section">
+                <button class="import-zone" onclick="document.getElementById('bookmark-file').click()">
+                    <span>📥 导入谷歌书签 (.html)</span>
                 </button>
                 <input type="file" id="bookmark-file" accept=".html" style="display:none" onchange="window.importBookmarks(event)">
             </div>
 
-            <div class="wallpaper-config">
-                <h3>壁纸控制台</h3>
+            <div class="config-section wallpaper-box">
                 <div class="wp-action-group">
-                    <button class="wp-btn rand" onclick="window.randomWallpaper()">✨ 随机必应</button>
-                    <button class="wp-btn fix" onclick="window.fixCurrentWallpaper()">📌 永久使用</button>
+                    <button class="pill-btn btn-bing" onclick="window.randomWallpaper()">✨ 随机必应</button>
+                    <button class="pill-btn btn-fix" onclick="window.fixCurrentWallpaper()">📌 固定背景</button>
                 </div>
                 <div class="input-row">
-                    <input type="text" id="wp-input" placeholder="自定义背景 URL">
-                    <button onclick="window.applyWallpaper()">设置</button>
+                    <input type="text" id="wp-input" placeholder="粘贴图片 URL">
+                    <button class="pill-btn btn-accent" onclick="window.applyWallpaper()">设置</button>
                 </div>
             </div>
 
             <div class="danger-zone">
-                <button class="btn-danger" onclick="window.clearAllData()">🧨 格式化所有数据</button>
+                <button class="pill-btn btn-danger full-w" onclick="window.clearAllData()">🧨 格式化所有数据</button>
             </div>
 
-            <button class="close-hub" onclick="window.hideModal('settings-hub')">退出管理中心</button>
+            <button class="pill-btn btn-cancel full-w" style="margin-top:20px;" onclick="window.hideModal('settings-hub')">退出管理中心</button>
         </div>
     </div>
 
