@@ -1,5 +1,5 @@
-const API_URL = '你的Worker地址/api/config'; 
-const ADMIN_PASS = '你的管理密码'; 
+const API_URL = 'mynavdata.summerqwer999.workers.dev/api/config'; 
+const ADMIN_PASS = '226688'; 
 
 let links = [];
 let wallpaper = '';
