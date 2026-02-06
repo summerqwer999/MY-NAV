@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>私人木纹书斋</title>
+    <title>私人书斋·雅筑</title>
     <link rel="stylesheet" href="style.css">
     <script src="https://cdn.jsdelivr.net/npm/sortablejs@1.15.0/Sortable.min.js"></script>
 </head>
@@ -17,13 +17,12 @@
                 <button id="login-btn" class="btn btn-glass" onclick="window.openLogin()">管理登录</button>
                 <div id="admin-actions" style="display:none;">
                     <button onclick="window.showSettingsHub()" class="btn btn-gold">⚙️ 深度设置</button>
-                    <button id="save-btn" onclick="window.saveAll()" class="btn btn-green">☁️ 云端同步</button>
+                    <button id="save-btn" onclick="window.saveAll()" class="btn btn-green">☁️ 云端保存</button>
                 </div>
             </div>
         </header>
 
-        <button id="exit-edit-btn" onclick="window.exitEditMode()">退出编辑模式并保存预览</button>
-
+        <button id="exit-edit-btn" onclick="window.exitEditMode()">退出编辑模式</button>
         <main id="link-grid" class="grid"></main>
     </div>
 
@@ -32,7 +31,7 @@
             <h2>通行证验证</h2>
             <input type="password" id="pass-input" placeholder="输入您的暗号">
             <div class="modal-btns">
-                <button class="action-btn" onclick="window.login()">开启管理模式</button>
+                <button class="action-btn" onclick="window.login()">进入书斋</button>
                 <button class="action-btn cancel" onclick="window.hideModal('login-modal')">返回</button>
             </div>
         </div>
@@ -42,19 +41,29 @@
         <div class="modal-content glass-card hub-content">
             <h2>管理中心</h2>
             <div class="hub-grid">
-                <div class="hub-item" onclick="window.openAddCategoryUI()">📁<br>添加新分类</div>
-                <div class="hub-item" onclick="window.openCategoryManager()">📝<br>编辑/排成分类</div>
-                <div class="hub-item" onclick="window.openAddLinkUI()">🔗<br>新增网页链接</div>
-                <div class="hub-item" onclick="window.enterEditMode()">🗑️<br>管理/删除链接</div>
+                <div class="hub-item" onclick="window.openAddCategoryUI()">📁<br>新建分类</div>
+                <div class="hub-item" onclick="window.openCategoryManager()">📝<br>分类管理</div>
+                <div class="hub-item" onclick="window.openAddLinkUI()">🔗<br>新增链接</div>
+                <div class="hub-item" onclick="window.enterEditMode()">🗑️<br>批量管理</div>
             </div>
             
+            <div class="import-box">
+                <button class="btn-import" onclick="document.getElementById('bookmark-file').click()">
+                    📥 导入谷歌浏览器书签 (.html)
+                </button>
+                <input type="file" id="bookmark-file" accept=".html" style="display:none" onchange="window.importBookmarks(event)">
+            </div>
+
             <div class="wallpaper-config">
-                <h3>书斋环境设置</h3>
-                <div class="input-row">
-                    <input type="text" id="wp-input" placeholder="输入背景图片 URL">
-                    <button onclick="window.applyWallpaper()">确定</button>
+                <h3>书斋壁纸实验室</h3>
+                <div class="wp-action-group">
+                    <button class="wp-btn rand" onclick="window.randomWallpaper()">✨ 随机必应美图</button>
+                    <button class="wp-btn fix" onclick="window.fixCurrentWallpaper()">📌 永久使用这张</button>
                 </div>
-                <button class="random-wp-btn" onclick="window.randomWallpaper()">✨ 试试必应随机美图</button>
+                <div class="input-row">
+                    <input type="text" id="wp-input" placeholder="或粘贴自定义图片 URL">
+                    <button onclick="window.applyWallpaper()">设置</button>
+                </div>
             </div>
             <button class="close-hub" onclick="window.hideModal('settings-hub')">退出设置</button>
         </div>
