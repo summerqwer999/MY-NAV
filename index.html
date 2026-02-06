@@ -1,0 +1,29 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>我的私人导航</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <div id="app">
+        <header class="glass-header">
+            <h1>我的导航</h1>
+            <div id="admin-zone">
+                <input type="password" id="pass-input" placeholder="管理密码">
+                <button onclick="login()">登录</button>
+            </div>
+        </header>
+
+        <div id="edit-bar" style="display:none;" class="glass-card">
+            <input type="text" id="wp-input" placeholder="背景壁纸 URL">
+            <button onclick="addCard()">+ 增加链接</button>
+            <button onclick="saveAll()" class="save-btn">保存到云端</button>
+        </div>
+
+        <main id="link-grid" class="grid"></main>
+    </div>
+    <script src="script.js"></script>
+</body>
+</html>
