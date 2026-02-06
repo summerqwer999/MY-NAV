@@ -2,30 +2,26 @@
 <html lang="zh-CN">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>我的私人导航</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>私人导航 - 增强版</title>
     <link rel="stylesheet" href="style.css">
+    <script src="https://cdn.jsdelivr.net/npm/sortablejs@1.15.0/Sortable.min.js"></script>
 </head>
 <body>
     <div id="bg-layer"></div>
     
     <div id="app">
         <header class="glass-header">
-            <h1 id="site-title">私人导航</h1>
+            <h1>我的导航</h1>
             <div id="nav-controls">
-                <button id="login-btn" onclick="showModal()">管理登录</button>
+                <button id="login-btn" onclick="showLoginModal()">管理登录</button>
                 <div id="admin-actions" style="display:none;">
-                    <button onclick="addCard()">+ 增加</button>
+                    <span id="drag-tip">💡 拖拽卡片可直接排序</span>
+                    <button onclick="showSettings()" class="settings-btn">⚙️ 设置</button>
                     <button onclick="saveAll()" class="save-btn">保存云端</button>
-                    <button onclick="location.reload()" style="background:#666;">退出</button>
                 </div>
             </div>
         </header>
-
-        <div id="bg-edit-bar" style="display:none;" class="glass-card">
-            <p>背景图片地址：</p>
-            <input type="text" id="wp-input" placeholder="输入背景图 URL (jpg/png)">
-        </div>
 
         <main id="link-grid" class="grid"></main>
     </div>
@@ -33,12 +29,39 @@
     <div id="login-modal" class="modal">
         <div class="modal-content glass-card">
             <h3>管理员验证</h3>
-            <input type="password" id="pass-input" placeholder="请输入 ADMIN_SECRET">
+            <input type="password" id="pass-input" placeholder="输入密码">
             <div class="modal-btns">
                 <button onclick="login()">确认</button>
-                <button onclick="hideModal()" style="background:#666;">取消</button>
+                <button onclick="hideModal('login-modal')">取消</button>
             </div>
         </div>
+    </div>
+
+    <div id="settings-modal" class="modal">
+        <div class="modal-content glass-card settings-panel">
+            <h3>管理菜单</h3>
+            <div class="settings-section">
+                <h4>背景设置</h4>
+                <div class="input-group">
+                    <input type="text" id="wp-input" placeholder="壁纸 URL">
+                    <button onclick="applyWallpaper()">确定</button>
+                </div>
+            </div>
+            <div class="settings-section">
+                <h4>分类管理</h4>
+                <button onclick="addCategory()">添加分类</button>
+                <div id="category-list"></div>
+            </div>
+            <div class="settings-section">
+                <h4>链接管理</h4>
+                <button onclick="addLink()">添加链接</button>
+            </div>
+            <button onclick="hideModal('settings-modal')" class="close-btn">关闭</button>
+        </div>
+    </div>
+
+    <div id="edit-modal" class="modal">
+        <div id="edit-content" class="modal-content glass-card"></div>
     </div>
 
     <script src="script.js"></script>
