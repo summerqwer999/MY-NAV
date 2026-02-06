@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>私人木纹导航</title>
+    <title>私人木纹导航 - 终极版</title>
     <link rel="stylesheet" href="style.css">
     <script src="https://cdn.jsdelivr.net/npm/sortablejs@1.15.0/Sortable.min.js"></script>
 </head>
@@ -22,15 +22,17 @@
             </div>
         </header>
 
+        <button id="exit-edit-btn" onclick="exitEditMode()">退出编辑模式</button>
+
         <main id="link-grid" class="grid"></main>
     </div>
 
     <div id="login-modal" class="modal">
         <div class="modal-content glass-card">
-            <h2>通行证验证</h2>
+            <h2>管理员验证</h2>
             <input type="password" id="pass-input" placeholder="输入您的暗号">
             <div class="modal-btns">
-                <button class="action-btn" onclick="login()">开启管理模式</button>
+                <button class="action-btn" onclick="login()">开启管理</button>
                 <button class="action-btn cancel" onclick="hideModal('login-modal')">取消</button>
             </div>
         </div>
@@ -40,23 +42,27 @@
         <div class="modal-content glass-card hub-content">
             <h2>管理中心</h2>
             <div class="hub-grid">
-                <div class="hub-item" onclick="addCategory()">📁<br>添加分类</div>
-                <div class="hub-item" onclick="editCategory()">📝<br>管理分类</div>
-                <div class="hub-item" onclick="addLink()">🔗<br>添加链接</div>
-                <div class="hub-item" onclick="editLinks()">🛠️<br>管理链接</div>
+                <div class="hub-item" onclick="openAddCategoryUI()">📁<br>添加分类</div>
+                <div class="hub-item" onclick="openCategoryManager()">📝<br>编辑分类</div>
+                <div class="hub-item" onclick="openAddLinkUI()">🔗<br>添加链接</div>
+                <div class="hub-item" onclick="enterEditMode()">🗑️<br>管理链接</div>
             </div>
             
             <div class="wallpaper-config">
                 <h3>壁纸实验室</h3>
                 <div class="input-row">
                     <input type="text" id="wp-input" placeholder="输入壁纸 URL">
-                    <button onclick="applyWallpaper()">确定设置</button>
+                    <button onclick="applyWallpaper()">确定</button>
                 </div>
                 <button class="random-wp-btn" onclick="randomWallpaper()">✨ 试试必应随机美图</button>
             </div>
-            
-            <button class="close-hub" onclick="hideModal('settings-hub')">退出设置</button>
+            <button class="close-hub" onclick="hideModal('settings-hub')">退出菜单</button>
         </div>
+    </div>
+
+    <div id="universal-modal" class="modal">
+        <div id="universal-content" class="modal-content glass-card">
+            </div>
     </div>
 
     <script src="script.js"></script>
