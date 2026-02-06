@@ -2,8 +2,8 @@
 <html lang="zh-CN">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>私人导航 - 增强版</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>私人木纹导航</title>
     <link rel="stylesheet" href="style.css">
     <script src="https://cdn.jsdelivr.net/npm/sortablejs@1.15.0/Sortable.min.js"></script>
 </head>
@@ -12,13 +12,12 @@
     
     <div id="app">
         <header class="glass-header">
-            <h1>我的导航</h1>
+            <h1 class="logo">我的书斋</h1>
             <div id="nav-controls">
-                <button id="login-btn" onclick="showLoginModal()">管理登录</button>
+                <button id="login-btn" class="round-btn" onclick="showModal('login-modal')">管理登录</button>
                 <div id="admin-actions" style="display:none;">
-                    <span id="drag-tip">💡 拖拽卡片可直接排序</span>
-                    <button onclick="showSettings()" class="settings-btn">⚙️ 设置</button>
-                    <button onclick="saveAll()" class="save-btn">保存云端</button>
+                    <button onclick="showSettingsHub()" class="round-btn settings-main-btn">⚙️ 深度设置</button>
+                    <button onclick="saveAll()" class="round-btn save-btn">☁️ 云端同步</button>
                 </div>
             </div>
         </header>
@@ -28,40 +27,36 @@
 
     <div id="login-modal" class="modal">
         <div class="modal-content glass-card">
-            <h3>管理员验证</h3>
-            <input type="password" id="pass-input" placeholder="输入密码">
+            <h2>通行证验证</h2>
+            <input type="password" id="pass-input" placeholder="输入您的暗号">
             <div class="modal-btns">
-                <button onclick="login()">确认</button>
-                <button onclick="hideModal('login-modal')">取消</button>
+                <button class="action-btn" onclick="login()">开启管理模式</button>
+                <button class="action-btn cancel" onclick="hideModal('login-modal')">取消</button>
             </div>
         </div>
     </div>
 
-    <div id="settings-modal" class="modal">
-        <div class="modal-content glass-card settings-panel">
-            <h3>管理菜单</h3>
-            <div class="settings-section">
-                <h4>背景设置</h4>
-                <div class="input-group">
-                    <input type="text" id="wp-input" placeholder="壁纸 URL">
-                    <button onclick="applyWallpaper()">确定</button>
+    <div id="settings-hub" class="modal">
+        <div class="modal-content glass-card hub-content">
+            <h2>管理中心</h2>
+            <div class="hub-grid">
+                <div class="hub-item" onclick="addCategory()">📁<br>添加分类</div>
+                <div class="hub-item" onclick="editCategory()">📝<br>管理分类</div>
+                <div class="hub-item" onclick="addLink()">🔗<br>添加链接</div>
+                <div class="hub-item" onclick="editLinks()">🛠️<br>管理链接</div>
+            </div>
+            
+            <div class="wallpaper-config">
+                <h3>壁纸实验室</h3>
+                <div class="input-row">
+                    <input type="text" id="wp-input" placeholder="输入壁纸 URL">
+                    <button onclick="applyWallpaper()">确定设置</button>
                 </div>
+                <button class="random-wp-btn" onclick="randomWallpaper()">✨ 试试必应随机美图</button>
             </div>
-            <div class="settings-section">
-                <h4>分类管理</h4>
-                <button onclick="addCategory()">添加分类</button>
-                <div id="category-list"></div>
-            </div>
-            <div class="settings-section">
-                <h4>链接管理</h4>
-                <button onclick="addLink()">添加链接</button>
-            </div>
-            <button onclick="hideModal('settings-modal')" class="close-btn">关闭</button>
+            
+            <button class="close-hub" onclick="hideModal('settings-hub')">退出设置</button>
         </div>
-    </div>
-
-    <div id="edit-modal" class="modal">
-        <div id="edit-content" class="modal-content glass-card"></div>
     </div>
 
     <script src="script.js"></script>
