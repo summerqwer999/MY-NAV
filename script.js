@@ -1,6 +1,5 @@
 // ====== 必须修改这里 ======
-const API_URL = '
-mynavdata.summerqwer999.workers.dev/api/config'; 
+const API_URL = 'mynavdata.summerqwer999.workers.dev/api/config'; 
 const ADMIN_PASS = '226688'; 
 // =========================
 
