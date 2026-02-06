@@ -1,7 +1,7 @@
 // ====== 请务必修改这里 ======
 const CONFIG = {
-    API_URL: 'https://你的Worker地址.workers.dev/api/config', 
-    ADMIN_PASS: '你的管理密码'
+    API_URL: 'https://mynavdata.summerqwer999.workers.dev/api/config', 
+    ADMIN_PASS: '226688'
 };
 // ==========================
 
