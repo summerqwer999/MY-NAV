@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>私人书斋·极简雅筑</title>
+    <title>私人书斋</title>
     <link rel="stylesheet" href="style.css">
     <script src="https://cdn.jsdelivr.net/npm/sortablejs@1.15.0/Sortable.min.js"></script>
 </head>
@@ -16,35 +16,33 @@
             <div class="header-right">
                 <button id="login-btn" class="btn btn-glass" onclick="window.openLogin()">管理登录</button>
                 <div id="admin-actions" style="display:none;">
-                    <button onclick="window.showSettingsHub()" class="btn btn-gold">⚙️ 深度设置</button>
+                    <button onclick="window.showSettingsHub()" class="btn btn-gold">⚙️ 设置中心</button>
                     <button id="save-btn" onclick="window.saveAll()" class="btn btn-green">☁️ 云端保存</button>
                 </div>
             </div>
         </header>
 
-        <button id="exit-edit-btn" onclick="window.exitEditMode()">保存修改并退出批量模式</button>
+        <button id="exit-edit-btn" onclick="window.exitEditMode()">保存并退出批量模式</button>
         <main id="link-grid" class="grid"></main>
     </div>
 
     <div id="login-modal" class="modal">
         <div class="modal-content glass-card">
-            <h2>通行证验证</h2>
-            <input type="password" id="pass-input" placeholder="输入您的管理暗号">
-            <div class="modal-btns">
-                <button class="action-btn" onclick="window.login()">开启管理</button>
-                <button class="action-btn cancel" onclick="window.hideModal('login-modal')">返回</button>
-            </div>
+            <h2>通行证</h2>
+            <input type="password" id="pass-input" placeholder="输入暗号">
+            <button class="action-btn" onclick="window.login()">进入</button>
+            <button class="action-btn cancel" onclick="window.hideModal('login-modal')">取消</button>
         </div>
     </div>
 
     <div id="settings-hub" class="modal">
         <div class="modal-content glass-card hub-content">
-            <h2>管理中心</h2>
+            <h2 style="margin-top:0">管理中心</h2>
             <div class="hub-grid">
-                <div class="hub-item" onclick="window.openAddCategoryUI()">📁<br>新建分类</div>
-                <div class="hub-item" onclick="window.openCategoryManager()">📝<br>分类管理</div>
-                <div class="hub-item" onclick="window.openAddLinkUI()">🔗<br>新增链接</div>
-                <div class="hub-item" onclick="window.enterEditMode()">🗑️<br>批量删除</div>
+                <div class="hub-item" onclick="window.openAddCategoryUI()">📁 新建分类</div>
+                <div class="hub-item" onclick="window.openCategoryManager()">📝 分类管理</div>
+                <div class="hub-item" onclick="window.openAddLinkUI()">🔗 新增链接</div>
+                <div class="hub-item" onclick="window.enterEditMode()">🗑️ 批量管理</div>
             </div>
             
             <div class="import-box">
@@ -55,22 +53,18 @@
             </div>
 
             <div class="wallpaper-config">
-                <h3>壁纸控制台</h3>
                 <div class="wp-action-group">
-                    <button class="wp-btn rand" onclick="window.randomWallpaper()">✨ 随机必应</button>
-                    <button class="wp-btn fix" onclick="window.fixCurrentWallpaper()">📌 永久使用</button>
+                    <button class="wp-btn rand" onclick="window.randomWallpaper()">✨ 随机壁纸</button>
+                    <button class="wp-btn fix" onclick="window.fixCurrentWallpaper()">📌 选定这张</button>
                 </div>
                 <div class="input-row">
-                    <input type="text" id="wp-input" placeholder="自定义背景 URL">
-                    <button onclick="window.applyWallpaper()">设置</button>
+                    <input type="text" id="wp-input" placeholder="自定义背景图片 URL">
+                    <button onclick="window.applyWallpaper()" style="padding:0 20px; border-radius:30px; border:none; background:var(--accent); cursor:pointer">应用</button>
                 </div>
             </div>
 
-            <div class="danger-zone">
-                <button class="btn-danger" onclick="window.clearAllData()">🧨 格式化所有数据</button>
-            </div>
-
-            <button class="close-hub" onclick="window.hideModal('settings-hub')">退出管理中心</button>
+            <button class="action-btn danger" style="margin-top:20px" onclick="window.clearAllData()">🧨 格式化所有数据</button>
+            <button class="action-btn cancel" style="margin-top:15px" onclick="window.hideModal('settings-hub')">退出管理</button>
         </div>
     </div>
 
