@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>私人书斋·雅筑</title>
+    <title>私人书斋·极简版</title>
     <link rel="stylesheet" href="style.css">
     <script src="https://cdn.jsdelivr.net/npm/sortablejs@1.15.0/Sortable.min.js"></script>
 </head>
@@ -31,7 +31,7 @@
             <h2>通行证验证</h2>
             <input type="password" id="pass-input" placeholder="输入您的暗号">
             <div class="modal-btns">
-                <button class="action-btn" onclick="window.login()">进入书斋</button>
+                <button class="action-btn" onclick="window.login()">开启管理</button>
                 <button class="action-btn cancel" onclick="window.hideModal('login-modal')">返回</button>
             </div>
         </div>
@@ -49,22 +49,27 @@
             
             <div class="import-box">
                 <button class="btn-import" onclick="document.getElementById('bookmark-file').click()">
-                    📥 导入谷歌浏览器书签 (.html)
+                    📥 导入谷歌书签 (.html)
                 </button>
                 <input type="file" id="bookmark-file" accept=".html" style="display:none" onchange="window.importBookmarks(event)">
             </div>
 
             <div class="wallpaper-config">
-                <h3>书斋壁纸实验室</h3>
+                <h3>壁纸控制台</h3>
                 <div class="wp-action-group">
-                    <button class="wp-btn rand" onclick="window.randomWallpaper()">✨ 随机必应美图</button>
-                    <button class="wp-btn fix" onclick="window.fixCurrentWallpaper()">📌 永久使用这张</button>
+                    <button class="wp-btn rand" onclick="window.randomWallpaper()">✨ 随机必应</button>
+                    <button class="wp-btn fix" onclick="window.fixCurrentWallpaper()">📌 永久使用</button>
                 </div>
                 <div class="input-row">
-                    <input type="text" id="wp-input" placeholder="或粘贴自定义图片 URL">
-                    <button onclick="window.applyWallpaper()">设置</button>
+                    <input type="text" id="wp-input" placeholder="自定义背景 URL">
+                    <button onclick="window.applyWallpaper()">确定</button>
                 </div>
             </div>
+
+            <div class="danger-zone">
+                <button class="btn-danger" onclick="window.clearAllData()">🧨 清空所有数据 (慎点)</button>
+            </div>
+
             <button class="close-hub" onclick="window.hideModal('settings-hub')">退出设置</button>
         </div>
     </div>
