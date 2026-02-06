@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>私人书斋·极简版</title>
+    <title>私人书斋·极简雅筑</title>
     <link rel="stylesheet" href="style.css">
     <script src="https://cdn.jsdelivr.net/npm/sortablejs@1.15.0/Sortable.min.js"></script>
 </head>
@@ -22,14 +22,14 @@
             </div>
         </header>
 
-        <button id="exit-edit-btn" onclick="window.exitEditMode()">退出编辑模式</button>
+        <button id="exit-edit-btn" onclick="window.exitEditMode()">保存修改并退出批量模式</button>
         <main id="link-grid" class="grid"></main>
     </div>
 
     <div id="login-modal" class="modal">
         <div class="modal-content glass-card">
             <h2>通行证验证</h2>
-            <input type="password" id="pass-input" placeholder="输入您的暗号">
+            <input type="password" id="pass-input" placeholder="输入您的管理暗号">
             <div class="modal-btns">
                 <button class="action-btn" onclick="window.login()">开启管理</button>
                 <button class="action-btn cancel" onclick="window.hideModal('login-modal')">返回</button>
@@ -44,7 +44,7 @@
                 <div class="hub-item" onclick="window.openAddCategoryUI()">📁<br>新建分类</div>
                 <div class="hub-item" onclick="window.openCategoryManager()">📝<br>分类管理</div>
                 <div class="hub-item" onclick="window.openAddLinkUI()">🔗<br>新增链接</div>
-                <div class="hub-item" onclick="window.enterEditMode()">🗑️<br>批量管理</div>
+                <div class="hub-item" onclick="window.enterEditMode()">🗑️<br>批量删除</div>
             </div>
             
             <div class="import-box">
@@ -62,15 +62,15 @@
                 </div>
                 <div class="input-row">
                     <input type="text" id="wp-input" placeholder="自定义背景 URL">
-                    <button onclick="window.applyWallpaper()">确定</button>
+                    <button onclick="window.applyWallpaper()">设置</button>
                 </div>
             </div>
 
             <div class="danger-zone">
-                <button class="btn-danger" onclick="window.clearAllData()">🧨 清空所有数据 (慎点)</button>
+                <button class="btn-danger" onclick="window.clearAllData()">🧨 格式化所有数据</button>
             </div>
 
-            <button class="close-hub" onclick="window.hideModal('settings-hub')">退出设置</button>
+            <button class="close-hub" onclick="window.hideModal('settings-hub')">退出管理中心</button>
         </div>
     </div>
 
