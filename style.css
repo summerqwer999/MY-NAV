@@ -1,5 +1,5 @@
 :root {
-    --wood: url('https://images.unsplash.com/photo-1541123356219-284ebe98ae3b?q=80&w=1920');
+    /* 去除了默认背景图变量 */
     --accent: #d4a373;
     --text: #f3e5ab;
     --glass: rgba(0, 0, 0, 0.5);
@@ -9,13 +9,16 @@ body {
     margin: 0; padding: 0; min-height: 100vh;
     font-family: "PingFang SC", "Microsoft YaHei", sans-serif;
     color: var(--text); overflow-x: hidden;
+    background-color: #1a1a1a; /* 兜底深色背景 */
 }
 
 #bg-layer {
     position: fixed; top: 0; left: 0; width: 100%; height: 100%;
-    z-index: -1; background-image: var(--wood);
+    z-index: -1; 
+    /* 默认不设 background-image，由 JS 控制 */
+    background-color: #1a1a1a; 
     background-size: cover; background-position: center;
-    transition: background-image 1s ease;
+    transition: background-image 0.8s ease;
 }
 
 .main-header {
@@ -46,7 +49,6 @@ body {
     grid-template-columns: repeat(auto-fill, minmax(110px, 1fr)); 
 }
 
-/* 移动端适配微调 */
 @media (max-width: 600px) {
     .main-header { margin: 10px; padding: 10px 20px; }
     .grid { padding: 5px 15px; }
@@ -63,7 +65,7 @@ body {
 .card:hover { background: rgba(255,255,255,0.15); }
 .card a { text-decoration: none; color: white; display: block; }
 
-/* 图标：回归纯净逻辑，删掉复杂的占位符 */
+/* 图标：保持纯净，无复杂占位符 */
 .card img { 
     width: 32px; height: 32px; margin-bottom: 10px; border-radius: 10px; 
     background: rgba(255,255,255,0.9); padding: 6px; object-fit: contain;
@@ -107,8 +109,12 @@ input, select { width: 100%; padding: 14px; margin: 10px 0; background: rgba(0,0
 
 .wallpaper-config { background: rgba(0,0,0,0.3); padding: 20px; border-radius: 20px; }
 .wp-action-group { display: flex; gap: 10px; margin-bottom: 10px; }
-.wp-btn { flex: 1; padding: 12px; border: none; border-radius: 30px; cursor: pointer; font-weight: bold; color: white; }
+.wp-btn { flex: 1; padding: 12px; border: none; border-radius: 30px; cursor: pointer; font-weight: bold; color: white; font-size: 14px; transition: 0.3s; }
 .wp-btn.rand { background: #5a9bd5; }
-.wp-btn.fix { background: #ed7d31; }
+
+/* 选定按钮的交互状态样式 */
+.wp-btn.fix { background: #444; color: #888; pointer-events: none; } /* 默认不可点 */
+.wp-btn.fix.ready { background: #ed7d31; color: white; pointer-events: auto; box-shadow: 0 0 10px rgba(237, 125, 49, 0.4); } /* 准备选定 */
+.wp-btn.fix.locked { background: #4a7c44; color: white; pointer-events: auto; } /* 已锁定 */
 
 #exit-edit-btn { display:none; position:fixed; bottom:40px; left:50%; transform:translateX(-50%); z-index:2000; background:#ff4d4d; color:white; border:none; padding:15px 40px; border-radius:40px; font-weight:bold; box-shadow: 0 10px 20px rgba(0,0,0,0.5); }
