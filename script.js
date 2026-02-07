@@ -20,7 +20,7 @@ window.onload = async function() {
     } catch (e) { render(); }
 };
 
-// 1. 渲染引擎
+// 1. 渲染引擎 - 锁定 DuckDuckGo
 window.render = function() {
     const bgLayer = document.getElementById('bg-layer');
     const bgUrl = wallpaper || 'https://images.unsplash.com/photo-1541123356219-284ebe98ae3b?q=80&w=1920';
@@ -40,15 +40,16 @@ window.render = function() {
         links.filter(l => (l.category||'默认') === cat).forEach(item => {
             const card = document.createElement('div');
             card.className = 'glass-card card';
-            let domain = ''; try { domain = new URL(item.url).hostname; } catch(e) { domain = 'example.com'; }
+            let domain = ''; 
+            try { domain = new URL(item.url).hostname; } catch(e) { domain = 'example.com'; }
             
-            // 锁定 iowen 源
-            const iIcon = `https://api.iowen.cn/favicon/${domain}.png`;
+            // 使用最强大的 DuckDuckGo 源
+            const iIcon = `https://icons.duckduckgo.com/ip3/${domain}.ico`;
 
             card.innerHTML = `
                 <div class="delete-badge" onclick="window.directDelete('${item.url}','${item.title}')">✕</div>
                 <a href="${item.url}" target="_blank">
-                    <img src="${iIcon}" onload="this.style.backgroundColor='rgba(255,255,255,0.9)'" loading="lazy">
+                    <img src="${iIcon}" onerror="this.src='https://www.google.com/s2/favicons?domain=example.com&sz=64'" loading="lazy">
                     <div>${item.title}</div>
                 </a>`;
             
@@ -68,7 +69,7 @@ window.directDelete = (url, title) => {
     render();
 };
 
-// 3. 点击背景关闭弹窗逻辑
+// 3. 点击弹窗外关闭逻辑
 window.handleOutsideClick = (e) => {
     if (e.target.classList.contains('modal')) {
         window.hideModal(e.target.id);
@@ -79,10 +80,10 @@ window.handleOutsideClick = (e) => {
 window.openCategoryManager = () => {
     const cats = [...new Set(links.map(item => item.category || '默认'))];
     let listHtml = cats.map(cat => `
-        <div style="display:flex; gap:10px; margin-bottom:10px; align-items:center;">
-            <input type="text" value="${cat}" id="input-${cat}" style="margin:0">
-            <button class="btn btn-gold" style="padding:8px 15px" onclick="window.confirmRenameCat('${cat}')">改名</button>
-            <button class="btn" style="padding:8px 15px; background:#8e2a2a; color:white" onclick="window.confirmDelCat('${cat}')">删除</button>
+        <div style="display:flex; align-items:center; gap:10px; margin-bottom:10px; background:rgba(0,0,0,0.2); padding:10px; border-radius:15px;">
+            <input type="text" value="${cat}" id="input-${cat}" style="margin:0; flex:1">
+            <button class="btn btn-gold" style="padding:8px 15px; margin:0; font-size:12px;" onclick="window.confirmRenameCat('${cat}')">改名</button>
+            <button class="btn" style="padding:8px 15px; margin:0; font-size:12px; background:#8e2a2a; color:white" onclick="window.confirmDelCat('${cat}')">删除</button>
         </div>
     `).join('');
 
@@ -115,6 +116,7 @@ window.openAddCategoryUI = () => {
         <h3>新建分类</h3>
         <input id="new-cat" placeholder="分类名称">
         <button class="action-btn" onclick="window.confirmAddCat()">确定创建</button>
+        <button class="action-btn cancel" onclick="window.hideModal('universal-modal')">取消</button>
     `);
 };
 
@@ -125,12 +127,13 @@ window.openAddLinkUI = () => {
         <h3>新增链接</h3>
         <input id="at" placeholder="名称"><input id="au" placeholder="网址"><select id="ac">${opts}</select>
         <button class="action-btn" onclick="window.confirmAddLink()">确定添加</button>
+        <button class="action-btn cancel" onclick="window.hideModal('universal-modal')">取消</button>
     `);
 };
 
 window.confirmAddCat = () => {
     const c = document.getElementById('new-cat').value;
-    if(c) { links.push({title:'新站点', url:'https://www.google.com', category:c}); render(); hideModal('universal-modal'); }
+    if(c) { links.push({title:'新书架', url:'https://www.google.com', category:c}); render(); hideModal('universal-modal'); }
 };
 window.confirmAddLink = () => {
     const t=document.getElementById('at').value, u=document.getElementById('au').value, c=document.getElementById('ac').value;
@@ -167,7 +170,7 @@ window.randomWallpaper = () => {
     document.getElementById('bg-layer').style.backgroundImage = `url(${url})`;
     window.tempWp = url;
 };
-window.fixCurrentWallpaper = () => { if(window.tempWp) { wallpaper = window.tempWp; alert("背景已临时选定，请记得保存。"); } };
+window.fixCurrentWallpaper = () => { if(window.tempWp) wallpaper = window.tempWp; };
 window.applyWallpaper = () => { wallpaper = document.getElementById('wp-input').value; render(); };
 
 function checkAuth() { const t = localStorage.getItem('loginTime'); return t && (Date.now() - t < 12*60*60*1000); }
