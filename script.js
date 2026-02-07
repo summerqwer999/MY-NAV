@@ -14,17 +14,21 @@ window.onload = async function() {
         const res = await fetch(CONFIG.API_URL);
         const data = await res.json();
         links = data.links || [];
-        wallpaper = data.wallpaper || '';
+        wallpaper = data.wallpaper || ''; // 如果没有壁纸，保持空字符串
         if (checkAuth()) enableAdminMode();
         render();
     } catch (e) { render(); }
 };
 
-// 1. 渲染引擎 - 锁定 DuckDuckGo
+// 1. 渲染引擎
 window.render = function() {
     const bgLayer = document.getElementById('bg-layer');
-    const bgUrl = wallpaper || 'https://images.unsplash.com/photo-1541123356219-284ebe98ae3b?q=80&w=1920';
-    bgLayer.style.backgroundImage = `url(${bgUrl})`;
+    // 如果有壁纸则显示，没有则显示纯色（CSS已设置背景色）
+    if (wallpaper) {
+        bgLayer.style.backgroundImage = `url(${wallpaper})`;
+    } else {
+        bgLayer.style.backgroundImage = 'none';
+    }
     
     const grid = document.getElementById('link-grid');
     grid.innerHTML = '';
@@ -43,7 +47,7 @@ window.render = function() {
             let domain = ''; 
             try { domain = new URL(item.url).hostname; } catch(e) { domain = 'example.com'; }
             
-            // 使用最强大的 DuckDuckGo 源
+            // 使用 DuckDuckGo 源
             const iIcon = `https://icons.duckduckgo.com/ip3/${domain}.ico`;
 
             card.innerHTML = `
@@ -164,14 +168,35 @@ window.importBookmarks = (event) => {
     reader.readAsText(file);
 };
 
-// 6. 壁纸与权限
+// 6. 壁纸交互逻辑 (核心修改)
 window.randomWallpaper = () => {
     const url = `https://bing.img.run/rand_uhd.php?r=${Math.random()}`;
+    // 仅预览，不存入 wallpaper 变量
     document.getElementById('bg-layer').style.backgroundImage = `url(${url})`;
     window.tempWp = url;
+    
+    // 改变按钮状态：激活 "锁定这张"
+    const fixBtn = document.getElementById('wp-fix-btn');
+    fixBtn.className = 'wp-btn fix ready';
+    fixBtn.innerText = '🔒 锁定这张';
 };
-window.fixCurrentWallpaper = () => { if(window.tempWp) wallpaper = window.tempWp; };
-window.applyWallpaper = () => { wallpaper = document.getElementById('wp-input').value; render(); };
+
+window.fixCurrentWallpaper = () => { 
+    if(window.tempWp) { 
+        wallpaper = window.tempWp; // 正式保存
+        document.getElementById('wp-input').value = wallpaper; // 填入输入框
+        
+        // 改变按钮状态：已锁定
+        const fixBtn = document.getElementById('wp-fix-btn');
+        fixBtn.className = 'wp-btn fix locked';
+        fixBtn.innerText = '✅ 已锁定';
+    } 
+};
+
+window.applyWallpaper = () => { 
+    wallpaper = document.getElementById('wp-input').value; 
+    render(); // 重新渲染以应用
+};
 
 function checkAuth() { const t = localStorage.getItem('loginTime'); return t && (Date.now() - t < 12*60*60*1000); }
 window.login = () => {
