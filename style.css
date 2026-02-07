@@ -18,10 +18,9 @@ body {
     transition: background-image 1s ease;
 }
 
-/* 导航头 */
 .main-header {
     display: flex; justify-content: space-between; align-items: center;
-    padding: 12px 25px; margin: 20px;
+    padding: 12px 30px; margin: 20px;
     background: var(--glass); backdrop-filter: blur(20px);
     border-radius: 30px; border: 1px solid rgba(255,255,255,0.15);
 }
@@ -29,56 +28,52 @@ body {
 .logo { font-size: 1.2rem; font-weight: bold; }
 
 .btn {
-    border: none; padding: 10px 20px; border-radius: 40px;
-    cursor: pointer; font-size: 13px; transition: 0.3s;
-    margin-left: 5px; font-weight: 500;
+    border: none; padding: 10px 24px; border-radius: 40px;
+    cursor: pointer; font-size: 14px; transition: 0.3s;
+    margin-left: 8px; font-weight: 500;
 }
 .btn-glass { background: rgba(255,255,255,0.1); color: white; border: 1px solid rgba(255,255,255,0.2); }
 .btn-gold { background: var(--accent); color: #2c1e12; }
 .btn-green { background: #4a7c44; color: white; }
 .btn:hover { opacity: 0.8; transform: scale(1.02); }
 
-/* 卡片容器：移动端适配微调 */
-.grid { padding: 10px 20px; }
-.category-group { margin-bottom: 35px; }
-.cat-title { font-size: 1.1rem; margin-bottom: 15px; border-left: 5px solid var(--accent); padding-left: 12px; }
+.grid { padding: 10px 30px; }
+.category-group { margin-bottom: 40px; }
+.cat-title { font-size: 1.2rem; margin-bottom: 20px; border-left: 6px solid var(--accent); padding-left: 15px; }
+
 .cat-grid { 
-    display: grid; gap: 15px; 
-    grid-template-columns: repeat(auto-fill, minmax(100px, 1fr)); 
+    display: grid; gap: 20px; 
+    grid-template-columns: repeat(auto-fill, minmax(110px, 1fr)); 
 }
 
-/* 移动端特殊适配 */
-@media (max-width: 480px) {
-    .main-header { margin: 10px; padding: 10px 15px; }
+/* 移动端适配微调 */
+@media (max-width: 600px) {
+    .main-header { margin: 10px; padding: 10px 20px; }
     .grid { padding: 5px 15px; }
-    .cat-grid { gap: 10px; grid-template-columns: repeat(auto-fill, minmax(85px, 1fr)); }
+    .cat-grid { gap: 12px; grid-template-columns: repeat(auto-fill, minmax(90px, 1fr)); }
+    .btn { padding: 8px 15px; font-size: 12px; }
 }
 
 .glass-card {
     background: rgba(255,255,255,0.08); backdrop-filter: blur(15px);
-    border-radius: 20px; border: 1px solid rgba(255,255,255,0.1);
-    padding: 15px 10px; text-align: center; transition: 0.3s;
+    border-radius: 25px; border: 1px solid rgba(255,255,255,0.1);
+    padding: 20px 10px; text-align: center; transition: 0.3s;
     position: relative;
 }
 .card:hover { background: rgba(255,255,255,0.15); }
 .card a { text-decoration: none; color: white; display: block; }
 
-/* 图标与书本占位图 */
+/* 图标：回归纯净逻辑，删掉复杂的占位符 */
 .card img { 
-    width: 32px; height: 32px; margin-bottom: 8px; border-radius: 8px; 
-    background-color: #2c1e12; 
-    padding: 6px; object-fit: contain;
-    /* 书本样式占位逻辑 */
-    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='%23d4a373'%3E%3Cpath d='M4 19.5A2.5 2.5 0 0 1 6.5 17H20V3.5a.5.5 0 0 0-.5-.5H6.5A2.5 2.5 0 0 0 4 5.5v14z'/%3E%3C/svg%3E");
-    background-size: 20px; background-repeat: no-repeat; background-position: center;
+    width: 32px; height: 32px; margin-bottom: 10px; border-radius: 10px; 
+    background: rgba(255,255,255,0.9); padding: 6px; object-fit: contain;
 }
-.card div { font-size: 12px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.card div { font-size: 13px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; padding: 0 5px; }
 
-/* 批量管理直接删除按钮 */
 .delete-badge {
     display: none; position: absolute; top: -8px; right: -8px;
-    width: 24px; height: 24px; background: #ff4d4d; color: white;
-    border-radius: 50%; font-size: 16px; line-height: 24px;
+    width: 28px; height: 28px; background: #ff4d4d; color: white;
+    border-radius: 50%; font-size: 18px; line-height: 28px;
     text-align: center; font-weight: bold; cursor: pointer;
     box-shadow: 0 2px 8px rgba(0,0,0,0.4); border: 2px solid white; z-index: 10;
 }
@@ -86,31 +81,34 @@ body {
 .edit-mode .card { animation: shake 0.3s infinite; }
 @keyframes shake { 0%{transform:rotate(0)} 25%{transform:rotate(0.5deg)} 75%{transform:rotate(-0.5deg)} 100%{transform:rotate(0)} }
 
-/* 弹窗设计 */
-.modal { 
-    display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; 
-    background: rgba(0,0,0,0.85); z-index: 1000; justify-content: center; align-items: center; 
-}
-.modal-content { width: 90%; max-width: 420px; padding: 25px; box-sizing: border-box; }
-.hub-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-bottom: 20px; }
+.modal { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.85); z-index: 1000; justify-content: center; align-items: center; }
+.modal-content { width: 90%; max-width: 450px; padding: 30px; box-sizing: border-box; }
+.hub-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; margin-bottom: 20px; }
 .hub-item { 
-    background: rgba(255,255,255,0.05); padding: 20px 10px; border-radius: 18px; 
-    cursor: pointer; border: 1px solid rgba(255,255,255,0.1); font-weight: bold; font-size: 14px;
+    background: rgba(255,255,255,0.05); padding: 25px 10px; border-radius: 20px; 
+    cursor: pointer; border: 1px solid rgba(255,255,255,0.1); font-weight: bold;
 }
 .hub-item:hover { background: var(--accent); color: #222; }
 
-/* 按钮通用 */
-input, select { width: 100%; padding: 12px 15px; margin: 10px 0; background: rgba(0,0,0,0.5); border: 1px solid rgba(255,255,255,0.2); color: white; border-radius: 30px; box-sizing: border-box;}
-.action-btn { width: 100%; padding: 14px; border: none; border-radius: 40px; background: var(--accent); color: #222; font-weight: bold; cursor: pointer; margin-top: 10px; font-size: 15px; }
+input, select { width: 100%; padding: 14px; margin: 10px 0; background: rgba(0,0,0,0.5); border: 1px solid rgba(255,255,255,0.2); color: white; border-radius: 30px; box-sizing: border-box;}
+.action-btn { width: 100%; padding: 15px; border: none; border-radius: 40px; background: var(--accent); color: #222; font-weight: bold; cursor: pointer; margin-top: 10px; font-size: 16px; }
 .action-btn.cancel { background: #444; color: #aaa; }
+.action-btn.danger { background: #8e2a2a; color: white; }
 .action-btn:active { transform: scale(0.98); }
 
-.wp-apply-btn { padding:0 20px; border-radius:30px; border:none; background:var(--accent); cursor:pointer; font-weight: bold; color: #222;}
+.wp-apply-btn { padding:0 20px; border-radius:30px; border:none; background:var(--accent); cursor:pointer; font-weight:bold; color:#222; }
 
-.wallpaper-config { background: rgba(0,0,0,0.3); padding: 15px; border-radius: 20px; }
-.wp-action-group { display: flex; gap: 8px; margin-bottom: 10px; }
-.wp-btn { flex: 1; padding: 10px; border: none; border-radius: 30px; cursor: pointer; font-weight: bold; color: white; font-size: 13px; }
+.import-box { margin: 20px 0; }
+.btn-import { 
+    width: 100%; padding: 15px; background: transparent; 
+    border: 1px dashed var(--accent); color: var(--accent); 
+    border-radius: 20px; cursor: pointer;
+}
+
+.wallpaper-config { background: rgba(0,0,0,0.3); padding: 20px; border-radius: 20px; }
+.wp-action-group { display: flex; gap: 10px; margin-bottom: 10px; }
+.wp-btn { flex: 1; padding: 12px; border: none; border-radius: 30px; cursor: pointer; font-weight: bold; color: white; }
 .wp-btn.rand { background: #5a9bd5; }
 .wp-btn.fix { background: #ed7d31; }
 
-#exit-edit-btn { display:none; position:fixed; bottom:30px; left:50%; transform:translateX(-50%); z-index:2000; background:#ff4d4d; color:white; border:none; padding:12px 30px; border-radius:40px; font-weight:bold; box-shadow: 0 5px 15px rgba(0,0,0,0.5); }
+#exit-edit-btn { display:none; position:fixed; bottom:40px; left:50%; transform:translateX(-50%); z-index:2000; background:#ff4d4d; color:white; border:none; padding:15px 40px; border-radius:40px; font-weight:bold; box-shadow: 0 10px 20px rgba(0,0,0,0.5); }
