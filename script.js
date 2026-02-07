@@ -42,24 +42,16 @@ window.render = function() {
             card.className = 'glass-card card';
             let domain = ''; try { domain = new URL(item.url).hostname; } catch(e) { domain = 'example.com'; }
             
-            const gIcon = `https://www.google.com/s2/favicons?domain=${domain}&sz=64`;
+            // 锁定 iowen 源
             const iIcon = `https://api.iowen.cn/favicon/${domain}.png`;
 
-            const imgId = `img-${Math.random().toString(36).substr(2, 5)}`;
             card.innerHTML = `
                 <div class="delete-badge" onclick="window.directDelete('${item.url}','${item.title}')">✕</div>
                 <a href="${item.url}" target="_blank">
-                    <img id="${imgId}" src="${gIcon}" loading="lazy">
+                    <img src="${iIcon}" onload="this.style.backgroundColor='rgba(255,255,255,0.9)'" loading="lazy">
                     <div>${item.title}</div>
                 </a>`;
             
-            // 双保险图标逻辑
-            const tImg = card.querySelector(`#${imgId}`);
-            let switched = false;
-            const toI = () => { if(!switched){ switched=true; tImg.src=iIcon; } };
-            tImg.onerror = toI;
-            setTimeout(toI, 10000);
-
             catGrid.appendChild(card);
         });
         grid.appendChild(section);
@@ -76,14 +68,21 @@ window.directDelete = (url, title) => {
     render();
 };
 
-// 3. 分类管理功能
+// 3. 点击背景关闭弹窗逻辑
+window.handleOutsideClick = (e) => {
+    if (e.target.classList.contains('modal')) {
+        window.hideModal(e.target.id);
+    }
+};
+
+// 4. 分类管理功能
 window.openCategoryManager = () => {
     const cats = [...new Set(links.map(item => item.category || '默认'))];
     let listHtml = cats.map(cat => `
-        <div class="cat-manage-item">
-            <input type="text" value="${cat}" id="input-${cat}">
-            <button class="action-btn" style="width:auto; margin:0; padding:8px 15px; font-size:12px;" onclick="window.confirmRenameCat('${cat}')">改名</button>
-            <button class="action-btn danger" style="width:auto; margin:0; padding:8px 15px; font-size:12px;" onclick="window.confirmDelCat('${cat}')">删除</button>
+        <div style="display:flex; gap:10px; margin-bottom:10px; align-items:center;">
+            <input type="text" value="${cat}" id="input-${cat}" style="margin:0">
+            <button class="btn btn-gold" style="padding:8px 15px" onclick="window.confirmRenameCat('${cat}')">改名</button>
+            <button class="btn" style="padding:8px 15px; background:#8e2a2a; color:white" onclick="window.confirmDelCat('${cat}')">删除</button>
         </div>
     `).join('');
 
@@ -110,13 +109,12 @@ window.confirmDelCat = (cat) => {
     }
 };
 
-// 4. 新增与 UI
+// 5. 新增与 UI
 window.openAddCategoryUI = () => {
     window.showUniversalModal(`
         <h3>新建分类</h3>
         <input id="new-cat" placeholder="分类名称">
         <button class="action-btn" onclick="window.confirmAddCat()">确定创建</button>
-        <button class="action-btn cancel" onclick="window.hideModal('universal-modal')">取消</button>
     `);
 };
 
@@ -127,13 +125,12 @@ window.openAddLinkUI = () => {
         <h3>新增链接</h3>
         <input id="at" placeholder="名称"><input id="au" placeholder="网址"><select id="ac">${opts}</select>
         <button class="action-btn" onclick="window.confirmAddLink()">确定添加</button>
-        <button class="action-btn cancel" onclick="window.hideModal('universal-modal')">取消</button>
     `);
 };
 
 window.confirmAddCat = () => {
     const c = document.getElementById('new-cat').value;
-    if(c) { links.push({title:'新书架', url:'https://www.google.com', category:c}); render(); hideModal('universal-modal'); }
+    if(c) { links.push({title:'新站点', url:'https://www.google.com', category:c}); render(); hideModal('universal-modal'); }
 };
 window.confirmAddLink = () => {
     const t=document.getElementById('at').value, u=document.getElementById('au').value, c=document.getElementById('ac').value;
@@ -164,16 +161,16 @@ window.importBookmarks = (event) => {
     reader.readAsText(file);
 };
 
-// 5. 壁纸与权限
+// 6. 壁纸与权限
 window.randomWallpaper = () => {
     const url = `https://bing.img.run/rand_uhd.php?r=${Math.random()}`;
     document.getElementById('bg-layer').style.backgroundImage = `url(${url})`;
     window.tempWp = url;
 };
-window.fixCurrentWallpaper = () => { if(window.tempWp) wallpaper = window.tempWp; };
+window.fixCurrentWallpaper = () => { if(window.tempWp) { wallpaper = window.tempWp; alert("背景已临时选定，请记得保存。"); } };
 window.applyWallpaper = () => { wallpaper = document.getElementById('wp-input').value; render(); };
 
-function checkAuth() { const t = localStorage.getItem('loginTime'); return t && (Date.now() - t < 10*60*1000); }
+function checkAuth() { const t = localStorage.getItem('loginTime'); return t && (Date.now() - t < 12*60*60*1000); }
 window.login = () => {
     if(document.getElementById('pass-input').value === CONFIG.ADMIN_PASS) {
         localStorage.setItem('loginTime', Date.now()); enableAdminMode(); hideModal('login-modal');
