@@ -26,16 +26,16 @@
         <main id="link-grid" class="grid"></main>
     </div>
 
-    <div id="login-modal" class="modal">
+    <div id="login-modal" class="modal" onclick="window.handleOutsideClick(event)">
         <div class="modal-content glass-card">
             <h2>通行证</h2>
-            <input type="password" id="pass-input" placeholder="输入暗号">
+            <input type="password" id="pass-input" placeholder="输入暗号" onkeydown="if(event.key==='Enter') window.login()">
             <button class="action-btn" onclick="window.login()">进入</button>
             <button class="action-btn cancel" onclick="window.hideModal('login-modal')">取消</button>
         </div>
     </div>
 
-    <div id="settings-hub" class="modal">
+    <div id="settings-hub" class="modal" onclick="window.handleOutsideClick(event)">
         <div class="modal-content glass-card hub-content">
             <h2 style="margin-top:0">管理中心</h2>
             <div class="hub-grid">
@@ -59,7 +59,7 @@
                 </div>
                 <div class="input-row">
                     <input type="text" id="wp-input" placeholder="自定义背景图片 URL">
-                    <button onclick="window.applyWallpaper()" style="padding:0 20px; border-radius:30px; border:none; background:var(--accent); cursor:pointer">应用</button>
+                    <button onclick="window.applyWallpaper()" class="wp-apply-btn">应用</button>
                 </div>
             </div>
 
@@ -68,7 +68,7 @@
         </div>
     </div>
 
-    <div id="universal-modal" class="modal">
+    <div id="universal-modal" class="modal" onclick="window.handleOutsideClick(event)">
         <div id="universal-content" class="modal-content glass-card"></div>
     </div>
 
