@@ -1,7 +1,9 @@
 // ====== 配置区 ======
 const CONFIG = {
-    // 请确保这个域名和你 CF Worker 的域名一致
+    // 🔴 必改！请把这里改成你的真实 Worker 地址
+    // 例如： https://my-nav.你的名字.workers.dev/api/config
     API_URL: 'https://mynavdata.summerqwer999.workers.dev/api/config', 
+    
     ADMIN_PASS: '226688'
 };
 // ===================
@@ -170,10 +172,6 @@ window.importBookmarks = (event) => {
 };
 
 // 6. 壁纸交互逻辑 (核心修改区域)
-// === 修复说明 ===
-// 之前的问题：前端生成随机URL，每次刷新URL还是那个指令，导致图片又变了。
-// 现在的修复：前端请求后端的 /api/random，后端去探路拿到【真实固定地址】返回给前端。
-// 前端保存这个固定地址，以后刷新就再也不会变了。
 window.randomWallpaper = async () => {
     const btn = document.querySelector('.wp-btn.rand');
     const originalText = btn.innerText;
@@ -194,4 +192,81 @@ window.randomWallpaper = async () => {
             window.tempWp = data.url;
             
             // 预览图片
+            document.getElementById('bg-layer').style.backgroundImage = `url(${window.tempWp})`;
+            
+            // 改变按钮状态：激活 "锁定这张"
+            const fixBtn = document.getElementById('wp-fix-btn');
+            fixBtn.className = 'wp-btn fix ready';
+            fixBtn.innerText = '🔒 锁定这张';
+        }
+    } catch (e) {
+        alert("获取壁纸超时，请检查后端 API 是否部署成功");
+        console.error(e);
+    } finally {
+        btn.innerText = originalText;
+    }
+};
+
+window.fixCurrentWallpaper = () => { 
+    if(window.tempWp) { 
+        wallpaper = window.tempWp; // 正式保存固定地址到本地变量
+        document.getElementById('wp-input').value = wallpaper; // 填入输入框
         
+        // 改变按钮状态：已锁定
+        const fixBtn = document.getElementById('wp-fix-btn');
+        fixBtn.className = 'wp-btn fix locked';
+        fixBtn.innerText = '✅ 已锁定';
+        
+        // 注意：这里只是锁定了本地状态，记得点击右上角“云端保存”才能永久生效
+    } 
+};
+
+window.applyWallpaper = () => { 
+    wallpaper = document.getElementById('wp-input').value; 
+    render(); // 重新渲染以应用
+};
+
+function checkAuth() { const t = localStorage.getItem('loginTime'); return t && (Date.now() - t < 12*60*60*1000); }
+
+window.login = () => {
+    if(document.getElementById('pass-input').value === CONFIG.ADMIN_PASS) {
+        localStorage.setItem('loginTime', Date.now()); enableAdminMode(); hideModal('login-modal');
+    } else alert("暗号错误");
+};
+
+function enableAdminMode() { isLogged = true; document.getElementById('login-btn').style.display='none'; document.getElementById('admin-actions').style.display='flex'; }
+
+window.saveAll = async () => {
+    const btn = document.getElementById('save-btn'); 
+    btn.innerText = "同步中...";
+    try {
+        await fetch(CONFIG.API_URL, {
+            method: 'POST', mode: 'cors',
+            headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${CONFIG.ADMIN_PASS}` },
+            body: JSON.stringify({ links, wallpaper })
+        });
+        alert("✅ 云端同步成功！");
+    } catch (e) { alert("❌ 保存失败"); }
+    btn.innerText = "☁️ 云端保存";
+};
+
+// UI 辅助
+window.openLogin = () => document.getElementById('login-modal').style.display='flex';
+window.hideModal = (id) => document.getElementById(id).style.display='none';
+window.showSettingsHub = () => document.getElementById('settings-hub').style.display='flex';
+window.showUniversalModal = (h) => { document.getElementById('universal-content').innerHTML = h; document.getElementById('universal-modal').style.display='flex'; };
+window.enterEditMode = () => { document.body.classList.add('edit-mode'); document.getElementById('exit-edit-btn').style.display='block'; hideModal('settings-hub'); };
+window.exitEditMode = () => { document.body.classList.remove('edit-mode'); document.getElementById('exit-edit-btn').style.display='none'; };
+
+function reorderLinksFromDOM() {
+    const nl = [];
+    document.querySelectorAll('.cat-grid').forEach(g => {
+        const cat = g.dataset.category;
+        g.querySelectorAll('.card').forEach(c => {
+            const t = c.querySelector('div').innerText;
+            const item = links.find(l => l.title === t);
+            if(item) { item.category = cat; nl.push(item); }
+        });
+    });
+    links = [...new Set(nl)];
+}
