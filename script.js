@@ -1,5 +1,6 @@
 // ====== 配置区 ======
 const CONFIG = {
+    // 请确保这个域名和你 CF Worker 的域名一致
     API_URL: 'https://mynavdata.summerqwer999.workers.dev/api/config', 
     ADMIN_PASS: '226688'
 };
@@ -14,7 +15,8 @@ window.onload = async function() {
         const res = await fetch(CONFIG.API_URL);
         const data = await res.json();
         links = data.links || [];
-        wallpaper = data.wallpaper || ''; // 如果没有壁纸，保持空字符串
+        wallpaper = data.wallpaper || ''; 
+        
         if (checkAuth()) enableAdminMode();
         render();
     } catch (e) { render(); }
@@ -49,7 +51,6 @@ window.render = function() {
             
             // 使用 DuckDuckGo 源
             const iIcon = `https://icons.duckduckgo.com/ip3/${domain}.ico`;
-
             card.innerHTML = `
                 <div class="delete-badge" onclick="window.directDelete('${item.url}','${item.title}')">✕</div>
                 <a href="${item.url}" target="_blank">
@@ -90,7 +91,6 @@ window.openCategoryManager = () => {
             <button class="btn" style="padding:8px 15px; margin:0; font-size:12px; background:#8e2a2a; color:white" onclick="window.confirmDelCat('${cat}')">删除</button>
         </div>
     `).join('');
-
     window.showUniversalModal(`
         <h3>分类管理</h3>
         <div style="max-height:300px; overflow-y:auto; margin-bottom:20px;">${listHtml || '无分类'}</div>
@@ -139,6 +139,7 @@ window.confirmAddCat = () => {
     const c = document.getElementById('new-cat').value;
     if(c) { links.push({title:'新书架', url:'https://www.google.com', category:c}); render(); hideModal('universal-modal'); }
 };
+
 window.confirmAddLink = () => {
     const t=document.getElementById('at').value, u=document.getElementById('au').value, c=document.getElementById('ac').value;
     if(t&&u) { links.push({title:t,url:u,category:c}); render(); hideModal('universal-modal'); }
@@ -168,74 +169,29 @@ window.importBookmarks = (event) => {
     reader.readAsText(file);
 };
 
-// 6. 壁纸交互逻辑 (核心修改)
-window.randomWallpaper = () => {
-    const url = `https://bing.img.run/rand_uhd.php?r=${Math.random()}`;
-    // 仅预览，不存入 wallpaper 变量
-    document.getElementById('bg-layer').style.backgroundImage = `url(${url})`;
-    window.tempWp = url;
+// 6. 壁纸交互逻辑 (核心修改区域)
+// === 修复说明 ===
+// 之前的问题：前端生成随机URL，每次刷新URL还是那个指令，导致图片又变了。
+// 现在的修复：前端请求后端的 /api/random，后端去探路拿到【真实固定地址】返回给前端。
+// 前端保存这个固定地址，以后刷新就再也不会变了。
+window.randomWallpaper = async () => {
+    const btn = document.querySelector('.wp-btn.rand');
+    const originalText = btn.innerText;
     
-    // 改变按钮状态：激活 "锁定这张"
-    const fixBtn = document.getElementById('wp-fix-btn');
-    fixBtn.className = 'wp-btn fix ready';
-    fixBtn.innerText = '🔒 锁定这张';
-};
-
-window.fixCurrentWallpaper = () => { 
-    if(window.tempWp) { 
-        wallpaper = window.tempWp; // 正式保存
-        document.getElementById('wp-input').value = wallpaper; // 填入输入框
-        
-        // 改变按钮状态：已锁定
-        const fixBtn = document.getElementById('wp-fix-btn');
-        fixBtn.className = 'wp-btn fix locked';
-        fixBtn.innerText = '✅ 已锁定';
-    } 
-};
-
-window.applyWallpaper = () => { 
-    wallpaper = document.getElementById('wp-input').value; 
-    render(); // 重新渲染以应用
-};
-
-function checkAuth() { const t = localStorage.getItem('loginTime'); return t && (Date.now() - t < 12*60*60*1000); }
-window.login = () => {
-    if(document.getElementById('pass-input').value === CONFIG.ADMIN_PASS) {
-        localStorage.setItem('loginTime', Date.now()); enableAdminMode(); hideModal('login-modal');
-    } else alert("暗号错误");
-};
-function enableAdminMode() { isLogged = true; document.getElementById('login-btn').style.display='none'; document.getElementById('admin-actions').style.display='flex'; }
-
-window.saveAll = async () => {
-    const btn = document.getElementById('save-btn'); btn.innerText = "同步中...";
+    // UI 反馈：告诉用户正在获取
+    btn.innerText = '🎲 获取中...';
+    
     try {
-        await fetch(CONFIG.API_URL, {
-            method: 'POST', mode: 'cors',
-            headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${CONFIG.ADMIN_PASS}` },
-            body: JSON.stringify({ links, wallpaper })
-        });
-        alert("✅ 云端同步成功！");
-    } catch (e) { alert("❌ 保存失败"); }
-    btn.innerText = "☁️ 云端保存";
-};
-
-// UI 辅助
-window.openLogin = () => document.getElementById('login-modal').style.display='flex';
-window.hideModal = (id) => document.getElementById(id).style.display='none';
-window.showSettingsHub = () => document.getElementById('settings-hub').style.display='flex';
-window.showUniversalModal = (h) => { document.getElementById('universal-content').innerHTML = h; document.getElementById('universal-modal').style.display='flex'; };
-window.enterEditMode = () => { document.body.classList.add('edit-mode'); document.getElementById('exit-edit-btn').style.display='block'; hideModal('settings-hub'); };
-window.exitEditMode = () => { document.body.classList.remove('edit-mode'); document.getElementById('exit-edit-btn').style.display='none'; };
-
-function reorderLinksFromDOM() {
-    const nl = [];
-    document.querySelectorAll('.cat-grid').forEach(g => {
-        const cat = g.dataset.category;
-        g.querySelectorAll('.card').forEach(c => {
-            const t = c.querySelector('div').innerText;
-            const item = links.find(l => l.title === t);
-            if(item) { item.category = cat; nl.push(item); }
-        });
-    });
-    links = [...new Set(nl)];
-}
+        // 计算新的 API 地址: .../api/config -> .../api/random
+        // 这里巧妙利用了 regex replace，不用写死 URL
+        const randomApi = CONFIG.API_URL.replace('/config', '/random');
+        
+        const res = await fetch(randomApi);
+        const data = await res.json();
+        
+        if (data && data.url) {
+            // 这里拿到的 data.url 是后端解析好的“固定地址”
+            window.tempWp = data.url;
+            
+            // 预览图片
+        
