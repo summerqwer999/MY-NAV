@@ -1,9 +1,10 @@
 // ====== 配置区 ======
 const CONFIG = {
     // 🔴 必改！请把这里改成你的真实 Worker 地址
-    // 例如： https://my-nav.你的名字.workers.dev/api/config
     API_URL: 'https://mynavdata.summerqwer999.workers.dev/api/config', 
     
+    // 前端仍需保留密码以发送给后端验证
+    // 请确保这里的密码和你 Cloudflare 后台设置的 ADMIN_PASSWORD 一致
     ADMIN_PASS: '226688'
 };
 // ===================
@@ -16,18 +17,21 @@ window.onload = async function() {
     try {
         const res = await fetch(CONFIG.API_URL);
         const data = await res.json();
-        links = data.links || [];
-        wallpaper = data.wallpaper || ''; 
+        // 这里加了防御性编程，防止 null 报错
+        links = Array.isArray(data.links) ? data.links : [];
+        wallpaper = typeof data.wallpaper === 'string' ? data.wallpaper : ''; 
         
         if (checkAuth()) enableAdminMode();
         render();
-    } catch (e) { render(); }
+    } catch (e) { 
+        console.error("初始化失败:", e);
+        render(); 
+    }
 };
 
 // 1. 渲染引擎
 window.render = function() {
     const bgLayer = document.getElementById('bg-layer');
-    // 如果有壁纸则显示，没有则显示纯色（CSS已设置背景色）
     if (wallpaper) {
         bgLayer.style.backgroundImage = `url(${wallpaper})`;
     } else {
@@ -51,7 +55,6 @@ window.render = function() {
             let domain = ''; 
             try { domain = new URL(item.url).hostname; } catch(e) { domain = 'example.com'; }
             
-            // 使用 DuckDuckGo 源
             const iIcon = `https://icons.duckduckgo.com/ip3/${domain}.ico`;
             card.innerHTML = `
                 <div class="delete-badge" onclick="window.directDelete('${item.url}','${item.title}')">✕</div>
@@ -171,59 +174,63 @@ window.importBookmarks = (event) => {
     reader.readAsText(file);
 };
 
-// 6. 壁纸交互逻辑 (核心修改区域)
+// 6. 壁纸交互逻辑 (核心修改：预加载无缝切换)
 window.randomWallpaper = async () => {
     const btn = document.querySelector('.wp-btn.rand');
     const originalText = btn.innerText;
     
-    // UI 反馈：告诉用户正在获取
-    btn.innerText = '🎲 获取中...';
+    // UI 反馈
+    btn.innerText = '📡 连接中...';
+    btn.disabled = true;
     
     try {
-        // 计算新的 API 地址: .../api/config -> .../api/random
-        // 这里巧妙利用了 regex replace，不用写死 URL
         const randomApi = CONFIG.API_URL.replace('/config', '/random');
-        
         const res = await fetch(randomApi);
         const data = await res.json();
         
         if (data && data.url) {
-            // 这里拿到的 data.url 是后端解析好的“固定地址”
-            window.tempWp = data.url;
+            btn.innerText = '📥 下载中...';
             
-            // 预览图片
+            // === 预加载核心逻辑 ===
+            // 创建一个 Image 对象，在后台偷偷下载图片
+            await new Promise((resolve, reject) => {
+                const img = new Image();
+                img.onload = () => resolve(img);
+                img.onerror = () => reject(new Error("图片加载失败"));
+                img.src = data.url;
+            });
+
+            // 下载完了，现在才显示，实现无缝切换
+            window.tempWp = data.url;
             document.getElementById('bg-layer').style.backgroundImage = `url(${window.tempWp})`;
             
-            // 改变按钮状态：激活 "锁定这张"
             const fixBtn = document.getElementById('wp-fix-btn');
             fixBtn.className = 'wp-btn fix ready';
             fixBtn.innerText = '🔒 锁定这张';
         }
     } catch (e) {
-        alert("获取壁纸超时，请检查后端 API 是否部署成功");
+        alert("获取壁纸超时或失败，请重试");
         console.error(e);
     } finally {
+        // 恢复按钮状态
         btn.innerText = originalText;
+        btn.disabled = false;
     }
 };
 
 window.fixCurrentWallpaper = () => { 
     if(window.tempWp) { 
-        wallpaper = window.tempWp; // 正式保存固定地址到本地变量
-        document.getElementById('wp-input').value = wallpaper; // 填入输入框
-        
-        // 改变按钮状态：已锁定
+        wallpaper = window.tempWp; 
+        document.getElementById('wp-input').value = wallpaper; 
         const fixBtn = document.getElementById('wp-fix-btn');
         fixBtn.className = 'wp-btn fix locked';
         fixBtn.innerText = '✅ 已锁定';
-        
-        // 注意：这里只是锁定了本地状态，记得点击右上角“云端保存”才能永久生效
     } 
 };
 
 window.applyWallpaper = () => { 
     wallpaper = document.getElementById('wp-input').value; 
-    render(); // 重新渲染以应用
+    render(); 
 };
 
 function checkAuth() { const t = localStorage.getItem('loginTime'); return t && (Date.now() - t < 12*60*60*1000); }
@@ -238,6 +245,7 @@ function enableAdminMode() { isLogged = true; document.getElementById('login-btn
 
 window.saveAll = async () => {
     const btn = document.getElementById('save-btn'); 
+    const originalText = btn.innerText;
     btn.innerText = "同步中...";
     try {
         await fetch(CONFIG.API_URL, {
@@ -246,8 +254,12 @@ window.saveAll = async () => {
             body: JSON.stringify({ links, wallpaper })
         });
         alert("✅ 云端同步成功！");
-    } catch (e) { alert("❌ 保存失败"); }
-    btn.innerText = "☁️ 云端保存";
+    } catch (e) { 
+        alert("❌ 保存失败，可能是数据格式错误或密码不匹配"); 
+        console.error(e);
+    } finally {
+        btn.innerText = "☁️ 云端保存";
+    }
 };
 
 // UI 辅助
